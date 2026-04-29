@@ -91,7 +91,7 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Student Profiles
 INSERT INTO students (user_id, student_id, name, email, phone, faculty, program, year_of_study)
-SELECT u.id, 'STU005', 'Jane Doe', 'student@cavendish.ac.ug', '+256 700 000000', 'Computer Science', 'BSc Computer Science', 2
+SELECT u.id, 'STU005', 'Jane Doe', 'student@cavendish.ac.ug', '+256 700 000000', 'Science and Technology', 'BSc Computer Science', 2
 FROM users u WHERE u.email = 'student@cavendish.ac.ug'
 ON CONFLICT (student_id) DO NOTHING;
 
@@ -102,10 +102,10 @@ ON CONFLICT (student_id) DO NOTHING;
 
 -- Sample Courses
 INSERT INTO courses (code, name, credits, faculty, semester) VALUES
-    ('CS101', 'Introduction to Programming', 3, 'Computer Science', 'Semester 1'),
-    ('CS102', 'Data Structures & Algorithms', 4, 'Computer Science', 'Semester 1'),
-    ('CS201', 'Database Systems', 3, 'Computer Science', 'Semester 2'),
-    ('CS202', 'Web Development', 3, 'Computer Science', 'Semester 2'),
+    ('CS101', 'Introduction to Programming', 3, 'Science and Technology', 'Semester 1'),
+    ('CS102', 'Data Structures & Algorithms', 4, 'Science and Technology', 'Semester 1'),
+    ('CS201', 'Database Systems', 3, 'Science and Technology', 'Semester 2'),
+    ('CS202', 'Web Development', 3, 'Science and Technology', 'Semester 2'),
     ('MTH101', 'Calculus I', 3, 'Science', 'Semester 1'),
     ('BBA101', 'Principles of Management', 3, 'Business Administration', 'Semester 1'),
     ('BBA102', 'Financial Accounting', 3, 'Business Administration', 'Semester 1')

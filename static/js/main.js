@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicContent.appendChild(w);
         setTimeout(()=>{
             const isMobile = window.innerWidth <= 500;
-            new Chart(document.getElementById('enrollmentChart').getContext('2d'),{type:'doughnut',data:{labels:['Computer Science','Business Admin','Law','Engineering','Medicine'],datasets:[{data:[18,12,8,4,3],backgroundColor:['rgba(0,168,157,0.8)','rgba(0,40,85,0.8)','rgba(40,167,69,0.8)','rgba(240,173,78,0.8)','rgba(108,117,125,0.8)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:isMobile?'bottom':'right'}}}});
+            new Chart(document.getElementById('enrollmentChart').getContext('2d'),{type:'doughnut',data:{labels:['Science and Technology','Business Admin','Law','Engineering','Medicine'],datasets:[{data:[18,12,8,4,3],backgroundColor:['rgba(0,168,157,0.8)','rgba(0,40,85,0.8)','rgba(40,167,69,0.8)','rgba(240,173,78,0.8)','rgba(108,117,125,0.8)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:isMobile?'bottom':'right'}}}});
             new Chart(document.getElementById('financeChart').getContext('2d'),{type:'bar',data:{labels:['Sem 1 2025','Sem 2 2025','Sem 1 2026','Sem 2 2026'],datasets:[{label:'Fees Due',data:[95e6,98e6,105e6,125e6],backgroundColor:'rgba(0,40,85,0.6)',borderRadius:4},{label:'Fees Collected',data:[82e6,90e6,95e6,95e6],backgroundColor:'rgba(0,168,157,0.6)',borderRadius:4}]},options:{responsive:true,scales:{y:{beginAtZero:true,ticks:{callback:v=>'UGX '+(v/1e6)+'M'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}});
         },100);
     }
