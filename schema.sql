@@ -91,12 +91,12 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Student Profiles
 INSERT INTO students (user_id, student_id, name, email, phone, faculty, program, year_of_study)
-SELECT u.id, 'STU005', 'Jane Doe', 'student@cavendish.ac.ug', '+256 700 000000', 'Science and Technology', 'BSc Computer Science', 2
+SELECT u.id, 'STU001', 'Jane Doe', 'student@cavendish.ac.ug', '+256 700 000000', 'Science and Technology', 'BSc Computer Science', 2
 FROM users u WHERE u.email = 'student@cavendish.ac.ug'
 ON CONFLICT (student_id) DO NOTHING;
 
 INSERT INTO students (user_id, student_id, name, email, phone, faculty, program, year_of_study)
-SELECT u.id, 'STU006', 'John Smith', 'john@cavendish.ac.ug', '+256 700 111111', 'Business Administration', 'BBA', 1
+SELECT u.id, 'STU002', 'John Smith', 'john@cavendish.ac.ug', '+256 700 111111', 'Business Administration', 'BBA', 1
 FROM users u WHERE u.email = 'john@cavendish.ac.ug'
 ON CONFLICT (student_id) DO NOTHING;
 
@@ -114,23 +114,23 @@ ON CONFLICT (code) DO NOTHING;
 -- Sample Enrollments
 INSERT INTO enrollments (student_id, course_id)
 SELECT s.id, c.id FROM students s, courses c
-WHERE s.student_id = 'STU005' AND c.code IN ('CS101', 'CS102', 'MTH101')
+WHERE s.student_id = 'STU001' AND c.code IN ('CS101', 'CS102', 'MTH101')
 ON CONFLICT (student_id, course_id) DO NOTHING;
 
 -- Sample Fees
 INSERT INTO fees (student_id, amount_due, amount_paid, due_date, semester, status)
 SELECT s.id, 3500.00, 2000.00, '2026-05-30', 'Semester 2', 'pending'
-FROM students s WHERE s.student_id = 'STU005';
+FROM students s WHERE s.student_id = 'STU001';
 
 -- Sample Results
 INSERT INTO results (student_id, course_id, grade, score, semester, academic_year)
 SELECT s.id, c.id, 'A', 85, 'Semester 1', '2025/2026'
-FROM students s, courses c WHERE s.student_id = 'STU005' AND c.code = 'CS101';
+FROM students s, courses c WHERE s.student_id = 'STU001' AND c.code = 'CS101';
 
 INSERT INTO results (student_id, course_id, grade, score, semester, academic_year)
 SELECT s.id, c.id, 'A+', 92, 'Semester 1', '2025/2026'
-FROM students s, courses c WHERE s.student_id = 'STU005' AND c.code = 'CS102';
+FROM students s, courses c WHERE s.student_id = 'STU001' AND c.code = 'CS102';
 
 INSERT INTO results (student_id, course_id, grade, score, semester, academic_year)
 SELECT s.id, c.id, 'B+', 78, 'Semester 1', '2025/2026'
-FROM students s, courses c WHERE s.student_id = 'STU005' AND c.code = 'MTH101';
+FROM students s, courses c WHERE s.student_id = 'STU001' AND c.code = 'MTH101';

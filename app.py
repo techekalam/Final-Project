@@ -187,7 +187,11 @@ def register_student():
 
             if user_res.data:
                 new_user_id = user_res.data[0]['id']
-                student_id = f"STU{str(new_user_id).zfill(3)}"
+                # Generate consecutive STUXXX IDs
+                count_res = supabase.table('students').select('id', count='exact').execute()
+                count = count_res.count or 0
+                student_id = f"STU{str(count + 1).zfill(3)}"
+                
                 supabase.table('students').insert({
                     "user_id": new_user_id, "student_id": student_id,
                     "name": name, "email": email, "phone": phone,
@@ -200,7 +204,7 @@ def register_student():
 
     # Mock registration
     MOCK_NEXT_ID += 1
-    sid = f"STU{str(MOCK_NEXT_ID).zfill(3)}"
+    sid = f"STU{str(len(MOCK_PROFILES) + 1).zfill(3)}"
     MOCK_USERS[email] = {"id": MOCK_NEXT_ID, "email": email, "name": name, "role": "student", "password": "student"}
     MOCK_PROFILES[MOCK_NEXT_ID] = {"student_id": sid, "name": name, "email": email, "phone": phone, "faculty": faculty, "program": program}
     return jsonify({"message": f"Student registered successfully. ID: {sid}"}), 201
