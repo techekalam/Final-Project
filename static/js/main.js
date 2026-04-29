@@ -95,6 +95,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navLinksEl.firstChild) navLinksEl.firstChild.querySelector('a').classList.add('active');
     }
 
+    // MOBILE MENU LOGIC
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    function toggleSidebar() {
+        menuToggle.classList.toggle('active');
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    }
+
+    menuToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // Close sidebar when clicking links (mobile)
+    navLinksEl.addEventListener('click', (e) => {
+        if (window.innerWidth <= 850 && e.target.closest('a')) {
+            toggleSidebar();
+        }
+    });
+
     // STUDENT DASHBOARD
     async function loadStudentDashboard() {
         setPageHeader('Student Dashboard','Welcome back, '+currentUser.name+'!');
@@ -359,7 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
         w.innerHTML='<div class="glass-card span-2"><h3>📈 Enrollment Summary</h3><canvas id="enrollmentChart" height="120"></canvas></div><div class="glass-card span-1"><h3>📊 Quick Stats</h3><div class="info-block"><p><strong>Total Students:</strong> 45</p><p><strong>Active Courses:</strong> 6</p><p><strong>Revenue (Sem 1):</strong> '+formatUGX(125000000)+'</p><p><strong>Fee Collection Rate:</strong> 76%</p><p><strong>Avg. GPA:</strong> 3.6</p></div></div><div class="glass-card span-3"><h3>💰 Financial Health</h3><canvas id="financeChart" height="80"></canvas></div>';
         dynamicContent.appendChild(w);
         setTimeout(()=>{
-            new Chart(document.getElementById('enrollmentChart').getContext('2d'),{type:'doughnut',data:{labels:['Computer Science','Business Admin','Law','Engineering','Medicine'],datasets:[{data:[18,12,8,4,3],backgroundColor:['rgba(0,168,157,0.8)','rgba(0,40,85,0.8)','rgba(40,167,69,0.8)','rgba(240,173,78,0.8)','rgba(108,117,125,0.8)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+            const isMobile = window.innerWidth <= 500;
+            new Chart(document.getElementById('enrollmentChart').getContext('2d'),{type:'doughnut',data:{labels:['Computer Science','Business Admin','Law','Engineering','Medicine'],datasets:[{data:[18,12,8,4,3],backgroundColor:['rgba(0,168,157,0.8)','rgba(0,40,85,0.8)','rgba(40,167,69,0.8)','rgba(240,173,78,0.8)','rgba(108,117,125,0.8)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:isMobile?'bottom':'right'}}}});
             new Chart(document.getElementById('financeChart').getContext('2d'),{type:'bar',data:{labels:['Sem 1 2025','Sem 2 2025','Sem 1 2026','Sem 2 2026'],datasets:[{label:'Fees Due',data:[95e6,98e6,105e6,125e6],backgroundColor:'rgba(0,40,85,0.6)',borderRadius:4},{label:'Fees Collected',data:[82e6,90e6,95e6,95e6],backgroundColor:'rgba(0,168,157,0.6)',borderRadius:4}]},options:{responsive:true,scales:{y:{beginAtZero:true,ticks:{callback:v=>'UGX '+(v/1e6)+'M'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}});
         },100);
     }

@@ -52,7 +52,8 @@
 
     <!-- ==================== DASHBOARD VIEW ==================== -->
     <div id="dashboard-view" class="view">
-        <aside class="sidebar glass-panel">
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <aside id="sidebar" class="sidebar glass-panel">
             <div class="sidebar-header">
                 <div class="sidebar-logo">CU</div>
                 <div>
@@ -77,9 +78,16 @@
 
         <main class="main-content">
             <header class="top-header glass-panel">
-                <div>
-                    <h1 id="page-title">Dashboard</h1>
-                    <p id="page-subtitle" class="header-sub">Welcome back!</p>
+                <div class="header-left">
+                    <button id="menu-toggle" class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div>
+                        <h1 id="page-title">Dashboard</h1>
+                        <p id="page-subtitle" class="header-sub">Welcome back!</p>
+                    </div>
                 </div>
                 <div class="user-info">
                     <span id="user-role" class="badge">Role</span>
@@ -193,18 +201,20 @@
             <div class="glass-card span-3">
                 <h3>📘 Available Courses</h3>
                 <p class="card-desc">Select courses to enroll for the current semester.</p>
-                <table class="data-table" id="courses-table">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Course Name</th>
-                            <th>Credits</th>
-                            <th>Faculty</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="courses-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table" id="courses-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course Name</th>
+                                <th>Credits</th>
+                                <th>Faculty</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -214,18 +224,20 @@
         <div class="grid-layout">
             <div class="glass-card span-3">
                 <h3>📜 Academic Transcript</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Course</th>
-                            <th>Score</th>
-                            <th>Grade</th>
-                            <th>Semester</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transcript-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course</th>
+                                <th>Score</th>
+                                <th>Grade</th>
+                                <th>Semester</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transcript-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -256,18 +268,20 @@
             </div>
             <div class="glass-card span-3">
                 <h3>💰 Payment History</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Semester</th>
-                            <th>Amount Due</th>
-                            <th>Amount Paid</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fees-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Semester</th>
+                                <th>Amount Due</th>
+                                <th>Amount Paid</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fees-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -298,16 +312,18 @@
             </div>
             <div class="glass-card span-3">
                 <h3>📋 Recent Student Activity</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Action</th>
-                            <th>Time</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-activity-table"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Action</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-activity-table"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -371,19 +387,21 @@
         <div class="grid-layout">
             <div class="glass-card span-3">
                 <h3>👥 All Registered Students</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Faculty</th>
-                            <th>Program</th>
-                            <th>Phone</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-students-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Faculty</th>
+                                <th>Program</th>
+                                <th>Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-students-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -393,17 +411,19 @@
         <div class="grid-layout">
             <div class="glass-card span-3">
                 <h3>📘 Course Catalog</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Course Name</th>
-                            <th>Credits</th>
-                            <th>Faculty</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-courses-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course Name</th>
+                                <th>Credits</th>
+                                <th>Faculty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-courses-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
@@ -560,19 +580,21 @@
 
             <div class="glass-card span-3">
                 <h3>📊 All Submitted Grades</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Student ID</th>
-                            <th>Course</th>
-                            <th>Score</th>
-                            <th>Grade</th>
-                            <th>Semester</th>
-                        </tr>
-                    </thead>
-                    <tbody id="grades-tbody"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Student ID</th>
+                                <th>Course</th>
+                                <th>Score</th>
+                                <th>Grade</th>
+                                <th>Semester</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-tbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </template>
