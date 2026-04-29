@@ -269,7 +269,7 @@ def user_profile():
 # ---- Courses (GET & POST) ----
 @app.route('/api/courses', methods=['GET', 'POST', 'DELETE'])
 def manage_courses():
-    global MOCK_NEXT_COURSE_ID
+    global MOCK_NEXT_COURSE_ID, MOCK_COURSES
 
     if request.method == 'GET':
         if table_exists('courses'):
@@ -324,7 +324,6 @@ def manage_courses():
                 return jsonify({"error": str(e)}), 500
         
         # Mock delete
-        global MOCK_COURSES
         MOCK_COURSES = [c for c in MOCK_COURSES if str(c['id']) != str(course_id)]
         return jsonify({"message": "Course deleted successfully"}), 200
 
