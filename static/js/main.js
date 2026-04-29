@@ -299,9 +299,34 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const d=await(await fetch('/api/courses')).json();
             const tbody=document.getElementById('admin-courses-tbody');
-            d.courses.forEach(c=>{const tr=document.createElement('tr');tr.innerHTML='<td><strong>'+c.code+'</strong></td><td>'+c.name+'</td><td>'+c.credits+'</td><td>'+(c.faculty||'—')+'</td>';tbody.appendChild(tr);});
+            
+            const canDelete = currentUser.role === 'admin' || currentUser.role === 'registry';
+            
+            d.courses.forEach(c=>{
+                const tr=document.createElement('tr');
+                let actionHtml = '<td>—</td>';
+                if (canDelete) {
+                    actionHtml = `<td><button class="btn-small" style="background:#e53e3e;" onclick="deleteCourse(${c.id}, this)">Delete</button></td>`;
+                }
+                tr.innerHTML='<td><strong>'+c.code+'</strong></td><td>'+c.name+'</td><td>'+c.credits+'</td><td>'+(c.faculty||'—')+'</td>' + actionHtml;
+                tbody.appendChild(tr);
+            });
         } catch(err) { console.error(err); }
     }
+
+    // Global delete function for simplicity in inline onclick
+    window.deleteCourse = async function(id, btn) {
+        if (!confirm('Are you sure you want to delete this course? All related enrollments and results will also be deleted.')) return;
+        try {
+            const res = await fetch(`/api/courses?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                btn.closest('tr').remove();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to delete course');
+            }
+        } catch(err) { console.error(err); }
+    };
 
     // ADD COURSE
     function loadAddCourse() {

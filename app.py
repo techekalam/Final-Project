@@ -267,7 +267,7 @@ def user_profile():
 
 
 # ---- Courses (GET & POST) ----
-@app.route('/api/courses', methods=['GET', 'POST'])
+@app.route('/api/courses', methods=['GET', 'POST', 'DELETE'])
 def manage_courses():
     global MOCK_NEXT_COURSE_ID
 
@@ -309,6 +309,24 @@ def manage_courses():
         new_course = {"id": MOCK_NEXT_COURSE_ID, "code": code, "name": name, "credits": int(credits), "faculty": faculty}
         MOCK_COURSES.append(new_course)
         return jsonify({"message": f"Course {code} created successfully"}), 201
+
+    if request.method == 'DELETE':
+        course_id = request.args.get('id')
+        if not course_id:
+            return jsonify({"error": "Course ID is required"}), 400
+        
+        if table_exists('courses'):
+            try:
+                supabase.table('courses').delete().eq('id', course_id).execute()
+                return jsonify({"message": "Course deleted successfully"}), 200
+            except Exception as e:
+                print(f"Supabase course delete error: {e}")
+                return jsonify({"error": str(e)}), 500
+        
+        # Mock delete
+        global MOCK_COURSES
+        MOCK_COURSES = [c for c in MOCK_COURSES if str(c['id']) != str(course_id)]
+        return jsonify({"message": "Course deleted successfully"}), 200
 
 
 # ---- Course Enrollment ----
