@@ -314,9 +314,15 @@ def enroll_course():
     student_id = data.get('student_id')
     course_id = data.get('course_id')
 
-    if table_exists('enrollments'):
+    if table_exists('enrollments') and table_exists('students'):
         try:
-            res = supabase.table('enrollments').insert({"student_id": student_id, "course_id": course_id}).execute()
+            # Look up the actual student_id from the students table using the user_id
+            stu = supabase.table('students').select('id').eq('user_id', student_id).execute()
+            if not stu.data:
+                return jsonify({"error": "Student profile not found. Please contact Admin."}), 404
+            
+            sid = stu.data[0]['id']
+            res = supabase.table('enrollments').insert({"student_id": sid, "course_id": course_id}).execute()
             return jsonify({"message": "Successfully enrolled"}), 200
         except Exception as e:
             print(f"Supabase enroll error: {e}")
