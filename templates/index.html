@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cavendish University Student Records Management System - Manage enrollment, grades, tuition, and student data.">
+    <title>Cavendish University EMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Animated Background Blobs -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
+    <!-- ==================== LOGIN VIEW ==================== -->
+    <div id="login-view" class="view active">
+        <div class="glass-card login-card">
+            <div class="login-logo">
+                <div class="logo-icon">CU</div>
+            </div>
+            <div class="login-header">
+                <h1>Cavendish University</h1>
+                <p>Student Records Management System</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="e.g. student@cavendish.ac.ug">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" id="login-btn" class="btn-primary">
+                    <span class="btn-text">Sign In</span>
+                </button>
+                <div id="login-error" class="error-text"></div>
+            </form>
+            <div class="demo-hints">
+                <p><strong>Demo Credentials</strong></p>
+                <small>Admin: admin@cavendish.ac.ug / admin</small><br>
+                <small>Registry: registry@cavendish.ac.ug / registry</small><br>
+                <small>Finance: finance@cavendish.ac.ug / finance</small><br>
+                <small>Lecturer: lecturer@cavendish.ac.ug / lecturer</small><br>
+                <small>Student: student@cavendish.ac.ug / student</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DASHBOARD VIEW ==================== -->
+    <div id="dashboard-view" class="view">
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">CU</div>
+                <div>
+                    <h3>Cavendish EMS</h3>
+                    <small class="sidebar-subtitle">Management System</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul id="nav-links"></ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar" id="user-avatar">JD</div>
+                    <div>
+                        <div id="sidebar-user-name" class="sidebar-uname">User</div>
+                        <div id="sidebar-user-role" class="sidebar-urole">Role</div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn-logout">Sign Out</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header glass-panel">
+                <div>
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="page-subtitle" class="header-sub">Welcome back!</p>
+                </div>
+                <div class="user-info">
+                    <span id="user-role" class="badge">Role</span>
+                </div>
+            </header>
+
+            <div class="content-area" id="dynamic-content"></div>
+        </main>
+    </div>
+
+    <!-- ==================== TEMPLATES ==================== -->
+
+    <!-- STUDENT DASHBOARD -->
+    <template id="tpl-student-dashboard">
+        <div class="grid-layout">
+            <div class="glass-card stat-card accent-teal">
+                <div class="stat-icon">💰</div>
+                <div>
+                    <p class="stat-label">Fee Balance</p>
+                    <div class="stat-value" id="fee-balance">UGX 0</div>
+                    <small>Due: May 30, 2026</small>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-blue">
+                <div class="stat-icon">📚</div>
+                <div>
+                    <p class="stat-label">Enrolled Courses</p>
+                    <div class="stat-value" id="enrolled-count">0</div>
+                    <small>Current Semester</small>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-green">
+                <div class="stat-icon">📊</div>
+                <div>
+                    <p class="stat-label">Avg. Score</p>
+                    <div class="stat-value" id="avg-score">0%</div>
+                    <small>Overall Performance</small>
+                </div>
+            </div>
+            <div class="glass-card span-2">
+                <h3>📈 Academic Performance</h3>
+                <canvas id="performanceChart" height="100"></canvas>
+            </div>
+            <div class="glass-card span-1">
+                <h3>📅 Upcoming Lessons</h3>
+                <ul class="lesson-list" id="lesson-list"></ul>
+            </div>
+        </div>
+    </template>
+
+    <!-- STUDENT PROFILE -->
+    <template id="tpl-student-profile">
+        <div class="grid-layout">
+            <div class="glass-card span-2">
+                <h3>👤 My Profile</h3>
+                <form id="profile-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student ID</label>
+                            <input type="text" id="prof-id" readonly class="readonly-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="prof-name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="prof-email" readonly class="readonly-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="prof-phone" placeholder="+256 700 000000">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Faculty</label>
+                            <select id="prof-faculty">
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Business Administration">Business Administration</option>
+                                <option value="Law">Law</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Medicine">Medicine</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Program</label>
+                            <input type="text" id="prof-program" placeholder="e.g. BSc Computer Science">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <span id="profile-msg" class="success-text"></span>
+                </form>
+            </div>
+            <div class="glass-card span-1">
+                <h3>ℹ️ Account Info</h3>
+                <div class="info-block">
+                    <p><strong>Status:</strong> <span class="badge badge-green">Active</span></p>
+                    <p><strong>Enrolled Since:</strong> Sept 2025</p>
+                    <p><strong>Year:</strong> 2</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- COURSE ENROLLMENT -->
+    <template id="tpl-enrollment">
+        <div class="grid-layout">
+            <div class="glass-card span-3">
+                <h3>📘 Available Courses</h3>
+                <p class="card-desc">Select courses to enroll for the current semester.</p>
+                <table class="data-table" id="courses-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                            <th>Faculty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courses-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- TRANSCRIPTS -->
+    <template id="tpl-transcripts">
+        <div class="grid-layout">
+            <div class="glass-card span-3">
+                <h3>📜 Academic Transcript</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transcript-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- TUITION TRACKER -->
+    <template id="tpl-tuition">
+        <div class="grid-layout">
+            <div class="glass-card stat-card accent-teal">
+                <div class="stat-icon">💳</div>
+                <div>
+                    <p class="stat-label">Total Due</p>
+                    <div class="stat-value" id="total-due">UGX 0</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-green">
+                <div class="stat-icon">✅</div>
+                <div>
+                    <p class="stat-label">Total Paid</p>
+                    <div class="stat-value" id="total-paid">UGX 0</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-blue">
+                <div class="stat-icon">⏳</div>
+                <div>
+                    <p class="stat-label">Balance</p>
+                    <div class="stat-value" id="tuition-balance">UGX 0</div>
+                </div>
+            </div>
+            <div class="glass-card span-3">
+                <h3>💰 Payment History</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Semester</th>
+                            <th>Amount Due</th>
+                            <th>Amount Paid</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fees-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- ADMIN DASHBOARD -->
+    <template id="tpl-admin-dashboard">
+        <div class="grid-layout">
+            <div class="glass-card stat-card accent-teal">
+                <div class="stat-icon">💰</div>
+                <div>
+                    <p class="stat-label">Total Revenue</p>
+                    <div class="stat-value" id="admin-revenue">UGX 0</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-blue">
+                <div class="stat-icon">🎓</div>
+                <div>
+                    <p class="stat-label">Total Students</p>
+                    <div class="stat-value" id="admin-admissions">0</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card accent-warning">
+                <div class="stat-icon">📝</div>
+                <div>
+                    <p class="stat-label">Pending Results</p>
+                    <div class="stat-value" id="admin-pending">0</div>
+                </div>
+            </div>
+            <div class="glass-card span-3">
+                <h3>📋 Recent Student Activity</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Action</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-activity-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- ADMIN: REGISTER STUDENT -->
+    <template id="tpl-register-student">
+        <div class="grid-layout">
+            <div class="glass-card span-2">
+                <h3>➕ Register New Student</h3>
+                <form id="register-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="reg-name" required placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="reg-email" required placeholder="e.g. name@cavendish.ac.ug">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="reg-phone" placeholder="+256 700 000000">
+                        </div>
+                        <div class="form-group">
+                            <label>Faculty</label>
+                            <select id="reg-faculty">
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Business Administration">Business Administration</option>
+                                <option value="Law">Law</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Medicine">Medicine</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Program</label>
+                            <input type="text" id="reg-program" required placeholder="e.g. BSc Computer Science">
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">Register Student</button>
+                    <span id="register-msg" class="success-text"></span>
+                </form>
+            </div>
+            <div class="glass-card span-1">
+                <h3>📌 Instructions</h3>
+                <div class="info-block">
+                    <p>Fill in the student details and click <strong>Register Student</strong>.</p>
+                    <p>A unique Student ID will be generated automatically.</p>
+                    <p>Default password: <code>student</code></p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ADMIN: ALL STUDENTS LIST -->
+    <template id="tpl-all-students">
+        <div class="grid-layout">
+            <div class="glass-card span-3">
+                <h3>👥 All Registered Students</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Faculty</th>
+                            <th>Program</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-students-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- ADMIN: ALL COURSES -->
+    <template id="tpl-admin-courses">
+        <div class="grid-layout">
+            <div class="glass-card span-3">
+                <h3>📘 Course Catalog</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                            <th>Faculty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-courses-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- UNIVERSAL: USER PROFILE (for non-student stakeholders) -->
+    <template id="tpl-user-profile">
+        <div class="grid-layout">
+            <div class="glass-card span-2">
+                <h3>👤 My Profile</h3>
+                <form id="user-profile-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="up-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="up-email" readonly class="readonly-input">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="up-phone" placeholder="+256 700 000000">
+                        </div>
+                        <div class="form-group">
+                            <label>Department</label>
+                            <input type="text" id="up-department" placeholder="e.g. Computer Science">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <span id="up-msg" class="success-text"></span>
+                </form>
+            </div>
+            <div class="glass-card span-1">
+                <h3>ℹ️ Account Info</h3>
+                <div class="info-block">
+                    <p><strong>Status:</strong> <span class="badge badge-green">Active</span></p>
+                    <p><strong>Role:</strong> <span id="up-role-display" style="text-transform:capitalize;">—</span></p>
+                    <p><strong>Joined:</strong> Jan 2024</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ADD COURSE (for Admin & Lecturer) -->
+    <template id="tpl-add-course">
+        <div class="grid-layout">
+            <div class="glass-card span-2">
+                <h3>➕ Add New Course</h3>
+                <form id="add-course-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Course Code</label>
+                            <input type="text" id="course-code" required placeholder="e.g. CS301">
+                        </div>
+                        <div class="form-group">
+                            <label>Course Name</label>
+                            <input type="text" id="course-name" required placeholder="e.g. Software Engineering">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Credits</label>
+                            <input type="number" id="course-credits" required min="1" max="6" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label>Faculty</label>
+                            <select id="course-faculty">
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Business Administration">Business Administration</option>
+                                <option value="Law">Law</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Science">Science</option>
+                                <option value="Medicine">Medicine</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Course</button>
+                    <span id="add-course-msg" class="success-text"></span>
+                </form>
+            </div>
+            <div class="glass-card span-1">
+                <h3>📌 Instructions</h3>
+                <div class="info-block">
+                    <p>Enter the course details and click <strong>Create Course</strong>.</p>
+                    <p>Course codes must be unique (e.g. CS301, BBA201).</p>
+                    <p>Credits typically range from 1 to 6.</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- LECTURER: GRADE INPUT -->
+    <template id="tpl-grade-input">
+        <div class="grid-layout">
+            <div class="glass-card span-2">
+                <h3>📝 Input Student Grade</h3>
+                <form id="grade-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student ID</label>
+                            <select id="grade-student" required>
+                                <option value="">Select student...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Course</label>
+                            <select id="grade-course" required>
+                                <option value="">Select course...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Score (0-100)</label>
+                            <input type="number" id="grade-score" required min="0" max="100" placeholder="e.g. 85">
+                        </div>
+                        <div class="form-group">
+                            <label>Grade</label>
+                            <select id="grade-letter" required>
+                                <option value="">Select grade...</option>
+                                <option value="A+">A+ (90-100)</option>
+                                <option value="A">A (80-89)</option>
+                                <option value="B+">B+ (75-79)</option>
+                                <option value="B">B (70-74)</option>
+                                <option value="C+">C+ (65-69)</option>
+                                <option value="C">C (60-64)</option>
+                                <option value="D">D (50-59)</option>
+                                <option value="F">F (0-49)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Semester</label>
+                            <select id="grade-semester">
+                                <option value="Semester 1">Semester 1</option>
+                                <option value="Semester 2">Semester 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">Submit Grade</button>
+                    <span id="grade-msg" class="success-text"></span>
+                </form>
+            </div>
+            <div class="glass-card span-1">
+                <h3>📋 Recent Grades</h3>
+                <ul class="lesson-list" id="recent-grades-list">
+                    <!-- Populated dynamically -->
+                </ul>
+            </div>
+
+            <div class="glass-card span-3">
+                <h3>📊 All Submitted Grades</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Student ID</th>
+                            <th>Course</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grades-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
