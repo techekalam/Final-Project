@@ -211,15 +211,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { console.error(err); }
     }
 
-    async function loadTranscripts(targetUserId) {
-        setPageHeader('Academic Transcript','Official academic record.');
+    async function loadTranscripts(targetUserId, studentName) {
+        setPageHeader('Academic Transcript', studentName ? `Viewing results for: ${studentName}` : 'Official academic record.');
         injectTemplate('tpl-transcripts');
         
         const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry';
-        if (isStaff) document.getElementById('search-container-results').style.display = 'block';
+        if (isStaff) {
+            const container = document.getElementById('search-container-results');
+            container.style.display = 'block';
+            if (studentName) document.getElementById('student-search-results').value = studentName;
+        }
 
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
-        if (!uid && isStaff) return; // Wait for search
+        if (!uid && isStaff) return;
 
         try {
             const d=await(await fetch('/api/results?user_id='+(uid || 5))).json();
@@ -235,16 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { console.error(err); }
     }
 
-    async function loadTuition(targetUserId) {
-        setPageHeader('Tuition Tracker','Fee balances and payment history.');
+    async function loadTuition(targetUserId, studentName) {
+        setPageHeader('Tuition Tracker', studentName ? `Financial records for: ${studentName}` : 'Fee balances and payment history.');
         injectTemplate('tpl-tuition');
 
         const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
-        if (isStaff) document.getElementById('search-container-finance').style.display = 'block';
+        if (isStaff) {
+            const container = document.getElementById('search-container-finance');
+            container.style.display = 'block';
+            if (studentName) document.getElementById('student-search-finance').value = studentName;
+        }
 
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
         if (!uid && isStaff) {
-            // Set stats to 0 while waiting for search
             document.getElementById('total-due').textContent = formatUGX(0);
             document.getElementById('total-paid').textContent = formatUGX(0);
             document.getElementById('tuition-balance').textContent = formatUGX(0);
@@ -453,8 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     div.onclick = () => {
                         input.value = s.name;
                         list.innerHTML = '';
-                        if (context === 'results') loadTranscripts(s.user_id);
-                        else loadTuition(s.user_id);
+                        if (context === 'results') loadTranscripts(s.user_id, s.name);
+                        else loadTuition(s.user_id, s.name);
                     };
                     list.appendChild(div);
                 });
