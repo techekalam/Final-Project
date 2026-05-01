@@ -70,7 +70,6 @@ MOCK_COURSES = [
 
 MOCK_ENROLLMENTS = {5: [1, 2, 5]}  # user_id -> list of course_ids
 
-MOCK_GRADES = [
 MOCK_RESULTS = {} # Real-time storage for mock grades
 MOCK_GRADES = []  # For the global grade list view
 
