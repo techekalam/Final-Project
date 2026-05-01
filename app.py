@@ -71,14 +71,8 @@ MOCK_COURSES = [
 MOCK_ENROLLMENTS = {5: [1, 2, 5]}  # user_id -> list of course_ids
 
 MOCK_GRADES = [
-    {"id": 1, "student_name": "Jane Doe", "student_id": "CU-2026-001", "course_code": "CS101", "course_name": "Intro to Programming", "score": 85, "grade": "A", "semester": "Semester 1"},
-    {"id": 2, "student_name": "Jane Doe", "student_id": "CU-2026-001", "course_code": "CS102", "course_name": "Data Structures & Algorithms", "score": 92, "grade": "A+", "semester": "Semester 1"},
-    {"id": 3, "student_name": "Jane Doe", "student_id": "CU-2026-001", "course_code": "MTH101", "course_name": "Calculus I", "score": 78, "grade": "B+", "semester": "Semester 1"},
-]
-
-MOCK_NEXT_ID = 10
-MOCK_NEXT_COURSE_ID = 7
-MOCK_NEXT_GRADE_ID = 4
+MOCK_RESULTS = {} # Real-time storage for mock grades
+MOCK_GRADES = []  # For the global grade list view
 
 
 # --- Serve Templates ---
@@ -510,11 +504,13 @@ def manage_results():
             except Exception as e:
                 print(f"Supabase results GET error: {e}")
 
-        return jsonify({"results": [
+        # Mock fallback
+        res_list = MOCK_RESULTS.get(user_id, [
             {"course": {"code": "CS101",  "name": "Intro to Programming"},        "grade": "A",  "score": 85, "semester": "Semester 1"},
             {"course": {"code": "CS102",  "name": "Data Structures & Algorithms"},"grade": "A+", "score": 92, "semester": "Semester 1"},
             {"course": {"code": "MTH101", "name": "Calculus I"},                  "grade": "B+", "score": 78, "semester": "Semester 1"}
-        ]}), 200
+        ])
+        return jsonify({"results": res_list}), 200
 
     if request.method == 'POST':
         data = request.json
@@ -570,10 +566,13 @@ def manage_grades():
 
         # Mock: find student name and course name
         student_name = student_id_str
+        target_uid = None
         for uid, p in MOCK_PROFILES.items():
             if p.get('student_id') == student_id_str:
                 student_name = p['name']
+                target_uid = uid
                 break
+        
         course_code = ""
         course_name = ""
         for c in MOCK_COURSES:
@@ -583,7 +582,7 @@ def manage_grades():
                 break
 
         MOCK_NEXT_GRADE_ID += 1
-        MOCK_GRADES.append({
+        new_grade_item = {
             "id": MOCK_NEXT_GRADE_ID,
             "student_name": student_name,
             "student_id": student_id_str,
@@ -592,7 +591,17 @@ def manage_grades():
             "score": float(score),
             "grade": grade,
             "semester": semester
-        })
+        }
+        MOCK_GRADES.append(new_grade_item)
+        
+        # ALSO Save to the specific student's results for the Transcripts view
+        if target_uid:
+            if target_uid not in MOCK_RESULTS: MOCK_RESULTS[target_uid] = []
+            MOCK_RESULTS[target_uid].append({
+                "course": {"code": course_code, "name": course_name},
+                "grade": grade, "score": float(score), "semester": semester
+            })
+            
         return jsonify({"message": "Grade submitted successfully"}), 201
 
 
