@@ -478,9 +478,13 @@ def get_admin_dashboard():
         ]
     }), 200
 
+MOCK_FEES_DATA = [
+    {"id": 1, "amount_due": 12500000.00, "amount_paid": 7000000.00, "due_date": "2026-05-30", "semester": "Semester 1", "status": "partial"},
+    {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
+]
 
 # ---- Fees / Tuition ----
-@app.route('/api/fees', methods=['GET', 'POST'])
+@app.route('/api/fees', methods=['GET', 'POST', 'PUT'])
 def manage_fees():
     if request.method == 'GET':
         user_id = request.args.get('user_id')
@@ -494,10 +498,7 @@ def manage_fees():
             except Exception as e:
                 print(f"Supabase fees error: {e}")
 
-        return jsonify({"fees": [
-            {"id": 1, "amount_due": 12500000.00, "amount_paid": 7000000.00, "due_date": "2026-05-30", "semester": "Semester 1", "status": "partial"},
-            {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
-        ]}), 200
+        return jsonify({"fees": MOCK_FEES_DATA}), 200
 
     if request.method == 'POST':
         data = request.json
@@ -552,7 +553,14 @@ def manage_fees():
                 print(f"Supabase fees PUT error: {e}")
                 return jsonify({"error": str(e)}), 500
         
-        return jsonify({"error": "Database not connected"}), 500
+        # Mock Update Support
+        for f in MOCK_FEES_DATA:
+            if f['id'] == int(fid):
+                f['amount_paid'] = float(paid)
+                f['status'] = 'paid' if f['amount_paid'] >= f['amount_due'] else ('partial' if f['amount_paid'] > 0 else 'pending')
+                return jsonify({"message": "Mock fee record updated"}), 200
+
+        return jsonify({"error": "Record not found"}), 404
 
 
 # ---- Results / Grades ----
