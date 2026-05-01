@@ -529,22 +529,25 @@ def manage_fees():
         fid = data.get('id')
         paid = data.get('amount_paid')
 
+        if not fid or paid is None:
+            return jsonify({"error": "Record ID and amount paid are required"}), 400
+
         if table_exists('fees'):
             try:
-                # Get current record to calculate status
-                curr = supabase.table('fees').select('*').eq('id', fid).single().execute()
+                # Fetch current record to get the amount_due
+                curr = supabase.table('fees').select('amount_due').eq('id', int(fid)).execute()
                 if not curr.data:
                     return jsonify({"error": "Fee record not found"}), 404
                 
-                due = float(curr.data['amount_due'])
-                p   = float(paid)
+                due = float(curr.data[0]['amount_due'])
+                p = float(paid)
                 status = 'paid' if p >= due else ('partial' if p > 0 else 'pending')
 
                 res = supabase.table('fees').update({
                     "amount_paid": p,
                     "status": status
-                }).eq('id', fid).execute()
-                return jsonify({"message": "Fee record updated"}), 200
+                }).eq('id', int(fid)).execute()
+                return jsonify({"message": "Fee record updated successfully"}), 200
             except Exception as e:
                 print(f"Supabase fees PUT error: {e}")
                 return jsonify({"error": str(e)}), 500
