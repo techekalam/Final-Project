@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setPageHeader('Academic Transcript', studentName ? `Viewing results for: ${studentName}` : 'Official academic record.');
         injectTemplate('tpl-transcripts');
         
-        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry';
+        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
         if (isStaff) {
             const container = document.getElementById('search-container-results');
             container.style.display = 'block';
