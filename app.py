@@ -440,10 +440,6 @@ def get_admin_dashboard():
                 pending_res = supabase.table('results').select('id', count='exact').is_('grade', 'null').execute()
                 pending = pending_res.count or 0
 
-            return jsonify({
-                "total_revenue": float(revenue),
-                "new_admissions": total_students,
-                "pending_results": pending,
             # Real Activity Feed
             recent_activity = []
             if table_exists('students'):
