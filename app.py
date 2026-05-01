@@ -492,7 +492,11 @@ def get_fees():
 @app.route('/api/results', methods=['GET', 'POST'])
 def manage_results():
     if request.method == 'GET':
-        user_id = request.args.get('user_id')
+        user_id_str = request.args.get('user_id')
+        if not user_id_str:
+            return jsonify({"results": []}), 200
+        user_id = int(user_id_str)
+
         if table_exists('results') and table_exists('students'):
             try:
                 stu = supabase.table('students').select('id').eq('user_id', user_id).execute()
