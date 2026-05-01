@@ -313,7 +313,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         due_date: document.getElementById('fee-due-date').value
                     };
                     const res = await fetch('/api/fees', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (res.ok) { msgEl.textContent = '✓ Fee record added!'; loadTuition(targetUserId, studentName); }
+                    if (res.ok) { 
+                        const originalBtn = e.submitter;
+                        const originalText = originalBtn.textContent;
+                        originalBtn.textContent = 'Addition successful ✓';
+                        originalBtn.style.background = '#28a745';
+                        document.getElementById('add-fee-form').reset();
+                        setTimeout(() => { 
+                            originalBtn.textContent = originalText; 
+                            originalBtn.style.background = '';
+                            loadTuition(targetUserId, studentName); 
+                        }, 3000);
+                    }
                     else { const err = await res.json(); msgEl.textContent = '✗ ' + (err.error || 'Failed'); }
                 });
             }
