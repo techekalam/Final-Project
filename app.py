@@ -613,5 +613,29 @@ def get_all_students():
     return jsonify({"students": students}), 200
 
 
+@app.route('/api/students/search', methods=['GET'])
+def search_students():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({"students": []}), 200
+
+    if table_exists('students'):
+        try:
+            # Search by name or student_id
+            res = supabase.table('students').select('*').or_(f"name.ilike.%{query}%,student_id.ilike.%{query}%").limit(10).execute()
+            return jsonify({"students": res.data}), 200
+        except Exception as e:
+            print(f"Supabase search error: {e}")
+            return jsonify({"error": str(e)}), 500
+
+    # Mock search
+    results = [
+        {**p, "user_id": uid}
+        for uid, p in MOCK_PROFILES.items()
+        if query.lower() in p['name'].lower() or query.lower() in p['student_id'].lower()
+    ]
+    return jsonify({"students": results}), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

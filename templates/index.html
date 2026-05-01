@@ -222,6 +222,13 @@
     <!-- TRANSCRIPTS -->
     <template id="tpl-transcripts">
         <div class="grid-layout">
+            <div id="search-container-results" class="glass-card span-3" style="display:none; margin-bottom: 20px;">
+                <div class="search-box">
+                    <input type="text" id="student-search-results" placeholder="Search Student by Name or ID (e.g. STU001)...">
+                    <button class="btn-primary" onclick="window.performStudentSearch('results')">Search</button>
+                </div>
+                <div id="search-results-list" class="search-results-dropdown"></div>
+            </div>
             <div class="glass-card span-3">
                 <h3>📜 Academic Transcript</h3>
                 <div class="table-container">
@@ -245,6 +252,13 @@
     <!-- TUITION TRACKER -->
     <template id="tpl-tuition">
         <div class="grid-layout">
+            <div id="search-container-finance" class="glass-card span-3" style="display:none; margin-bottom: 20px;">
+                <div class="search-box">
+                    <input type="text" id="student-search-finance" placeholder="Search Student by Name or ID (e.g. STU001)...">
+                    <button class="btn-primary" onclick="window.performStudentSearch('finance')">Search</button>
+                </div>
+                <div id="search-finance-list" class="search-results-dropdown"></div>
+            </div>
             <div class="glass-card stat-card accent-teal">
                 <div class="stat-icon">💳</div>
                 <div>

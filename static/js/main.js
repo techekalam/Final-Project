@@ -211,14 +211,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { console.error(err); }
     }
 
-    // TRANSCRIPTS
-    async function loadTranscripts() {
+    async function loadTranscripts(targetUserId) {
         setPageHeader('Academic Transcript','Official academic record.');
         injectTemplate('tpl-transcripts');
+        
+        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry';
+        if (isStaff) document.getElementById('search-container-results').style.display = 'block';
+
+        const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
+        if (!uid && isStaff) return; // Wait for search
+
         try {
-            const uid=currentUser.role==='student'?currentUser.id:5;
-            const d=await(await fetch('/api/results?user_id='+uid)).json();
+            const d=await(await fetch('/api/results?user_id='+(uid || 5))).json();
             const tbody=document.getElementById('transcript-tbody');
+            tbody.innerHTML = '';
             d.results.forEach(r=>{
                 const tr=document.createElement('tr');
                 const cn=r.course?r.course.name:r.courses?r.courses.name:'—';
@@ -229,15 +235,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { console.error(err); }
     }
 
-    // TUITION
-    async function loadTuition() {
+    async function loadTuition(targetUserId) {
         setPageHeader('Tuition Tracker','Fee balances and payment history.');
         injectTemplate('tpl-tuition');
+
+        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
+        if (isStaff) document.getElementById('search-container-finance').style.display = 'block';
+
+        const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
+        if (!uid && isStaff) {
+            // Set stats to 0 while waiting for search
+            document.getElementById('total-due').textContent = formatUGX(0);
+            document.getElementById('total-paid').textContent = formatUGX(0);
+            document.getElementById('tuition-balance').textContent = formatUGX(0);
+            return;
+        }
+
         try {
-            const uid=currentUser.role==='student'?currentUser.id:5;
-            const d=await(await fetch('/api/fees?user_id='+uid)).json();
+            const d=await(await fetch('/api/fees?user_id='+(uid || 5))).json();
             let totalDue=0,totalPaid=0;
             const tbody=document.getElementById('fees-tbody');
+            tbody.innerHTML = '';
             d.fees.forEach(f=>{
                 totalDue+=parseFloat(f.amount_due);totalPaid+=parseFloat(f.amount_paid);
                 const tr=document.createElement('tr');
@@ -410,4 +428,37 @@ document.addEventListener('DOMContentLoaded', () => {
             new Chart(document.getElementById('financeChart').getContext('2d'),{type:'bar',data:{labels:['Sem 1 2025','Sem 2 2025','Sem 1 2026','Sem 2 2026'],datasets:[{label:'Fees Due',data:[95e6,98e6,105e6,125e6],backgroundColor:'rgba(0,40,85,0.6)',borderRadius:4},{label:'Fees Collected',data:[82e6,90e6,95e6,95e6],backgroundColor:'rgba(0,168,157,0.6)',borderRadius:4}]},options:{responsive:true,scales:{y:{beginAtZero:true,ticks:{callback:v=>'UGX '+(v/1e6)+'M'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}});
         },100);
     }
+
+    // STUDENT SEARCH LOGIC
+    window.performStudentSearch = async function(context) {
+        const input = document.getElementById(`student-search-${context}`);
+        const list = document.getElementById(`search-${context}-list`);
+        const query = input.value.trim();
+        if (!query) return;
+
+        try {
+            const res = await fetch(`/api/students/search?q=${query}`);
+            const data = await res.json();
+            list.innerHTML = '';
+            if (data.students.length === 0) {
+                list.innerHTML = '<div class="search-item" style="padding:10px; color:#e53e3e;">No students found.</div>';
+            } else {
+                data.students.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'search-item';
+                    div.style = "padding:10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.05); transition: 0.2s;";
+                    div.innerHTML = `<strong>${s.student_id}</strong> — ${s.name} <span style="font-size: 0.8em; opacity: 0.7;">(${s.faculty})</span>`;
+                    div.onmouseover = () => div.style.background = 'rgba(0,40,85,0.05)';
+                    div.onmouseout = () => div.style.background = 'transparent';
+                    div.onclick = () => {
+                        input.value = s.name;
+                        list.innerHTML = '';
+                        if (context === 'results') loadTranscripts(s.user_id);
+                        else loadTuition(s.user_id);
+                    };
+                    list.appendChild(div);
+                });
+            }
+        } catch (err) { console.error(err); }
+    };
 });
