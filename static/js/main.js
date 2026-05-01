@@ -285,10 +285,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function loadTuition(targetUserId, studentName) {
-        setPageHeader('Tuition Tracker', studentName ? `Financial records for: ${studentName}` : 'Fee balances and payment history.');
-        injectTemplate('tpl-tuition');
-
         const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
+        if (!document.getElementById('fees-tbody')) {
+            setPageHeader('Tuition Tracker', studentName ? `Financial records for: ${studentName}` : 'Fee balances and payment history.');
+            injectTemplate('tpl-tuition');
+        }
+
         if (isStaff) {
             const container = document.getElementById('search-container-finance');
             container.style.display = 'block';
