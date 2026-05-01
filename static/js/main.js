@@ -221,6 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('search-container-results');
             container.style.display = 'block';
             if (studentName) document.getElementById('student-search-results').value = studentName;
+            const header = document.getElementById('transcript-action-header');
+            if (header) header.style.display = 'table-cell';
         }
 
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
@@ -234,11 +236,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 const cn = r.course ? r.course.name : r.courses ? r.courses.name : '—';
                 const cc = r.course ? r.course.code : r.courses ? r.courses.code : '—';
-                tr.innerHTML = '<td><strong>' + cc + '</strong></td><td>' + cn + '</td><td>' + r.score + '</td><td><strong>' + r.grade + '</strong></td><td>' + r.semester + '</td>';
+                
+                let actionTd = '';
+                if (isStaff) {
+                    actionTd = `<td><button class="btn-small" onclick="window.editResult(${r.id}, this)">Edit</button></td>`;
+                }
+                
+                tr.innerHTML = '<td><strong>' + cc + '</strong></td><td>' + cn + '</td><td>' + r.score + '</td><td><strong>' + r.grade + '</strong></td><td>' + r.semester + '</td>' + actionTd;
                 tbody.appendChild(tr);
             });
         } catch (err) { console.error(err); }
     }
+
+    window.editResult = async function(id, btn) {
+        const newScore = prompt('Enter new score:');
+        if (newScore === null) return;
+        try {
+            const res = await fetch('/api/results', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, score: newScore }) });
+            if (res.ok) { loadTranscripts(); } else { alert('Failed to update result'); }
+        } catch (err) { console.error(err); }
+    };
 
     async function loadTuition(targetUserId, studentName) {
         setPageHeader('Tuition Tracker', studentName ? `Financial records for: ${studentName}` : 'Fee balances and payment history.');
@@ -479,6 +496,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         list.appendChild(div);
                     });
                 }
+            }
+        } catch (err) { console.error(err); }
+    };
+
+    // EDIT RESULT
+    window.editResult = async function(id, btn) {
+        const tr = btn.closest('tr');
+        const oldScore = tr.cells[2].textContent;
+        const newScore = prompt('Enter new score (0-100):', oldScore);
+        if (newScore === null || newScore === oldScore) return;
+        
+        const score = parseFloat(newScore);
+        if (isNaN(score) || score < 0 || score > 100) { alert('Invalid score'); return; }
+        
+        let grade = 'F';
+        if(score>=90) grade='A+'; else if(score>=80) grade='A'; else if(score>=75) grade='B+';
+        else if(score>=70) grade='B'; else if(score>=65) grade='C+'; else if(score>=60) grade='C';
+        else if(score>=50) grade='D';
+        
+        try {
+            const res = await fetch('/api/results', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, score, grade})
+            });
+            if (res.ok) {
+                tr.cells[2].textContent = score;
+                tr.cells[3].innerHTML = `<strong>${grade}</strong>`;
+                alert('Result updated successfully!');
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to update');
             }
         } catch (err) { console.error(err); }
     };

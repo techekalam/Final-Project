@@ -489,7 +489,7 @@ def get_fees():
 
 
 # ---- Results / Grades ----
-@app.route('/api/results', methods=['GET', 'POST'])
+@app.route('/api/results', methods=['GET', 'POST', 'PUT'])
 def manage_results():
     if request.method == 'GET':
         user_id_str = request.args.get('user_id')
@@ -510,6 +510,19 @@ def manage_results():
         # Mock fallback - only show what has been manually entered
         res_list = MOCK_RESULTS.get(user_id, [])
         return jsonify({"results": res_list}), 200
+
+    if request.method == 'PUT':
+        data = request.json
+        res_id = data.get('id')
+        score = data.get('score')
+        grade = data.get('grade')
+        if table_exists('results'):
+            try:
+                supabase.table('results').update({"score": score, "grade": grade}).eq('id', res_id).execute()
+                return jsonify({"message": "Result updated successfully"}), 200
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+        return jsonify({"message": "Mock result updated"}), 200
 
     if request.method == 'POST':
         data = request.json
