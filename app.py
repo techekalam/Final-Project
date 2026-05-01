@@ -480,23 +480,49 @@ def get_admin_dashboard():
 
 
 # ---- Fees / Tuition ----
-@app.route('/api/fees', methods=['GET'])
-def get_fees():
-    user_id = request.args.get('user_id')
-    if table_exists('fees') and table_exists('students'):
-        try:
-            stu = supabase.table('students').select('id').eq('user_id', user_id).execute()
-            if stu.data:
-                sid = stu.data[0]['id']
-                res = supabase.table('fees').select('*').eq('student_id', sid).execute()
-                return jsonify({"fees": res.data}), 200
-        except Exception as e:
-            print(f"Supabase fees error: {e}")
+@app.route('/api/fees', methods=['GET', 'POST'])
+def manage_fees():
+    if request.method == 'GET':
+        user_id = request.args.get('user_id')
+        if table_exists('fees') and table_exists('students'):
+            try:
+                stu = supabase.table('students').select('id').eq('user_id', user_id).execute()
+                if stu.data:
+                    sid = stu.data[0]['id']
+                    res = supabase.table('fees').select('*').eq('student_id', sid).execute()
+                    return jsonify({"fees": res.data}), 200
+            except Exception as e:
+                print(f"Supabase fees error: {e}")
 
-    return jsonify({"fees": [
-        {"id": 1, "amount_due": 12500000.00, "amount_paid": 7000000.00, "due_date": "2026-05-30", "semester": "Semester 1", "status": "partial"},
-        {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
-    ]}), 200
+        return jsonify({"fees": [
+            {"id": 1, "amount_due": 12500000.00, "amount_paid": 7000000.00, "due_date": "2026-05-30", "semester": "Semester 1", "status": "partial"},
+            {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
+        ]}), 200
+
+    if request.method == 'POST':
+        data = request.json
+        student_id_str = data.get('student_id')
+        amount_due     = data.get('amount_due')
+        semester       = data.get('semester', 'Semester 1')
+        due_date       = data.get('due_date')
+
+        if table_exists('fees') and table_exists('students'):
+            try:
+                stu = supabase.table('students').select('id').eq('student_id', student_id_str).execute()
+                if not stu.data:
+                    return jsonify({"error": "Student not found"}), 404
+                sid = stu.data[0]['id']
+                res = supabase.table('fees').insert({
+                    "student_id": sid, "amount_due": float(amount_due),
+                    "amount_paid": 0, "semester": semester, "due_date": due_date,
+                    "status": "pending"
+                }).execute()
+                return jsonify({"message": "Fee record added successfully"}), 201
+            except Exception as e:
+                print(f"Supabase fees POST error: {e}")
+                return jsonify({"error": str(e)}), 500
+        
+        return jsonify({"error": "Database not connected"}), 500
 
 
 # ---- Results / Grades ----

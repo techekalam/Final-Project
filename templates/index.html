@@ -257,7 +257,39 @@
 
     <!-- TUITION TRACKER -->
     <template id="tpl-tuition">
-        <div class="grid-layout">
+            <div class="glass-card span-3" id="add-fee-container" style="display:none; margin-bottom: 20px;">
+                <h3>💰 Add New Fee Record</h3>
+                <form id="add-fee-form" class="grid-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student</label>
+                            <select id="fee-student" required>
+                                <option value="">Select student...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount Due (UGX)</label>
+                            <input type="number" id="fee-amount-due" required placeholder="e.g. 3500000">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Semester</label>
+                            <select id="fee-semester">
+                                <option value="Semester 1">Semester 1</option>
+                                <option value="Semester 2">Semester 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="fee-due-date" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Fee Record</button>
+                    <span id="fee-msg" class="success-text"></span>
+                </form>
+            </div>
+
             <div id="search-container-finance" class="glass-card span-3" style="display:none; margin-bottom: 20px;">
                 <div class="search-box">
                     <input type="text" id="student-search-finance" placeholder="Search Student by Name or ID (e.g. STU001)...">

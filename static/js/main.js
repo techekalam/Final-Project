@@ -293,6 +293,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('search-container-finance');
             container.style.display = 'block';
             if (studentName) document.getElementById('student-search-finance').value = studentName;
+
+            // Finance Officer can add new fees
+            if (currentUser.role === 'finance') {
+                document.getElementById('add-fee-container').style.display = 'block';
+                // Populate student dropdown
+                const st = await (await fetch('/api/students')).json();
+                const sel = document.getElementById('fee-student');
+                sel.innerHTML = '<option value="">Select student...</option>';
+                st.students.forEach(s => { const opt = document.createElement('option'); opt.value = s.student_id; opt.textContent = `${s.name} (${s.student_id})`; sel.appendChild(opt); });
+
+                document.getElementById('add-fee-form').addEventListener('submit', async (e) => {
+                    e.preventDefault(); const msgEl = document.getElementById('fee-msg'); msgEl.textContent = '';
+                    const payload = { 
+                        student_id: document.getElementById('fee-student').value, 
+                        amount_due: document.getElementById('fee-amount-due').value,
+                        semester: document.getElementById('fee-semester').value,
+                        due_date: document.getElementById('fee-due-date').value
+                    };
+                    const res = await fetch('/api/fees', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (res.ok) { msgEl.textContent = '✓ Fee record added!'; loadTuition(targetUserId, studentName); }
+                    else { const err = await res.json(); msgEl.textContent = '✗ ' + (err.error || 'Failed'); }
+                });
+            }
         }
 
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
