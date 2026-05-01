@@ -291,8 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
         if (isStaff) {
             const container = document.getElementById('search-container-finance');
-            container.style.display = 'block';
             if (studentName) document.getElementById('student-search-finance').value = studentName;
+            const header = document.getElementById('finance-action-header');
+            if (header) header.style.display = 'table-cell';
 
             // Finance Officer can add new fees
             if (currentUser.role === 'finance') {
@@ -334,7 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
             d.fees.forEach(f => {
                 totalDue += parseFloat(f.amount_due); totalPaid += parseFloat(f.amount_paid);
                 const tr = document.createElement('tr');
-                tr.innerHTML = '<td>' + f.semester + '</td><td>' + formatUGX(f.amount_due) + '</td><td>' + formatUGX(f.amount_paid) + '</td><td>' + (f.due_date || '—') + '</td><td class="' + (f.status === 'paid' ? 'status-paid' : 'status-pending') + '">' + f.status.toUpperCase() + '</td>';
+                let actionTd = '';
+                if (currentUser.role === 'finance' || currentUser.role === 'admin') {
+                    actionTd = `<td><button class="btn-small" onclick="window.editFee(${f.id}, this)">Edit</button></td>`;
+                }
+                tr.innerHTML = '<td>' + f.semester + '</td><td>' + formatUGX(f.amount_due) + '</td><td>' + formatUGX(f.amount_paid) + '</td><td>' + (f.due_date || '—') + '</td><td class="' + (f.status === 'paid' ? 'status-paid' : 'status-pending') + '">' + f.status.toUpperCase() + '</td>' + actionTd;
                 tbody.appendChild(tr);
             });
             document.getElementById('total-due').textContent = formatUGX(totalDue);
@@ -342,6 +347,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tuition-balance').textContent = formatUGX(totalDue - totalPaid);
         } catch (err) { console.error(err); }
     }
+
+    window.editFee = async function(id, btn) {
+        const newPaid = prompt('Enter total amount paid (UGX):');
+        if (newPaid === null) return;
+        try {
+            const res = await fetch('/api/fees', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, amount_paid: newPaid }) });
+            if (res.ok) { loadTuition(); } else { alert('Failed to update fee record'); }
+        } catch (err) { console.error(err); }
+    };
 
     // ADMIN DASHBOARD
     async function loadAdminDashboard() {

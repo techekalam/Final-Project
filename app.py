@@ -524,6 +524,33 @@ def manage_fees():
         
         return jsonify({"error": "Database not connected"}), 500
 
+    if request.method == 'PUT':
+        data = request.json
+        fid = data.get('id')
+        paid = data.get('amount_paid')
+
+        if table_exists('fees'):
+            try:
+                # Get current record to calculate status
+                curr = supabase.table('fees').select('*').eq('id', fid).single().execute()
+                if not curr.data:
+                    return jsonify({"error": "Fee record not found"}), 404
+                
+                due = float(curr.data['amount_due'])
+                p   = float(paid)
+                status = 'paid' if p >= due else ('partial' if p > 0 else 'pending')
+
+                res = supabase.table('fees').update({
+                    "amount_paid": p,
+                    "status": status
+                }).eq('id', fid).execute()
+                return jsonify({"message": "Fee record updated"}), 200
+            except Exception as e:
+                print(f"Supabase fees PUT error: {e}")
+                return jsonify({"error": str(e)}), 500
+        
+        return jsonify({"error": "Database not connected"}), 500
+
 
 # ---- Results / Grades ----
 @app.route('/api/results', methods=['GET', 'POST', 'PUT'])
