@@ -151,7 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('prof-phone').value = p.phone || '';
             if (p.faculty) document.getElementById('prof-faculty').value = p.faculty;
             if (p.program) document.getElementById('prof-program').value = p.program;
+            if (p.profile_pic) document.getElementById('prof-pic-display').src = p.profile_pic;
+            else document.getElementById('prof-pic-display').src = `https://ui-avatars.com/api/?name=${p.name || 'User'}&background=002855&color=fff`;
         } catch (err) { console.error(err); }
+
+        // Handle Image Upload Preview
+        document.getElementById('prof-pic-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('prof-pic-display').src = e.target.result;
+                    // In a real app, you'd upload this to a server/Supabase Storage
+                };
+                reader.readAsDataURL(file);
+            }
+        });
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const msgEl = document.getElementById('profile-msg'); msgEl.textContent = '';
             const profile = { name: document.getElementById('prof-name').value, phone: document.getElementById('prof-phone').value, faculty: document.getElementById('prof-faculty').value, program: document.getElementById('prof-program').value };
@@ -173,10 +188,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = d.profile;
             document.getElementById('up-name').value = p.name || '';
             document.getElementById('up-email').value = p.email || currentUser.email || '';
-            document.getElementById('up-phone').value = p.phone || '';
-            document.getElementById('up-department').value = p.department || '';
             document.getElementById('up-role-display').textContent = currentUser.role;
+            if (p.profile_pic) document.getElementById('up-pic-display').src = p.profile_pic;
+            else document.getElementById('up-pic-display').src = `https://ui-avatars.com/api/?name=${p.name || 'Staff'}&background=002855&color=fff`;
         } catch (err) { console.error(err); }
+
+        // Handle Image Upload Preview
+        document.getElementById('up-pic-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('up-pic-display').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
         document.getElementById('user-profile-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const msgEl = document.getElementById('up-msg'); msgEl.textContent = '';
             const profile = { name: document.getElementById('up-name').value, phone: document.getElementById('up-phone').value, department: document.getElementById('up-department').value };
