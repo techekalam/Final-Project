@@ -444,12 +444,27 @@ def get_admin_dashboard():
                 "total_revenue": float(revenue),
                 "new_admissions": total_students,
                 "pending_results": pending,
-                "recent_activity": [
-                    {"action": "Enrolled in CS101",   "student": "Jane Doe",   "time": "2 mins ago"},
-                    {"action": "Paid Tuition",        "student": "John Smith", "time": "1 hr ago"},
-                    {"action": "Updated Profile",     "student": "Alice W.",   "time": "3 hrs ago"},
-                    {"action": "New Registration",    "student": "David K.",   "time": "5 hrs ago"}
-                ]
+            # Real Activity Feed
+            recent_activity = []
+            if table_exists('students'):
+                stus = supabase.table('students').select('name, created_at').order('created_at', desc=True).limit(2).execute()
+                for s in stus.data:
+                    recent_activity.append({"action": "New Registration", "student": s['name'], "time": s['created_at'][:10]})
+            
+            if table_exists('results'):
+                grades = supabase.table('results').select('*, students(name)').order('created_at', desc=True).limit(3).execute()
+                for g in grades.data:
+                    name = g.get('students', {}).get('name', 'Student')
+                    recent_activity.append({"action": f"Grade Entered: {g['grade']}", "student": name, "time": g['created_at'][:10]})
+            
+            if not recent_activity:
+                recent_activity = [{"action": "No activity", "student": "System", "time": "—"}]
+
+            return jsonify({
+                "total_revenue": float(revenue),
+                "new_admissions": total_students,
+                "pending_results": pending,
+                "recent_activity": sorted(recent_activity, key=lambda x: x['time'], reverse=True)[:5]
             }), 200
         except Exception as e:
             print(f"Supabase admin dash error: {e}")
@@ -656,6 +671,30 @@ def search_students():
         if query.lower() in p['name'].lower() or query.lower() in p['student_id'].lower()
     ]
     return jsonify({"students": results}), 200
+
+
+@app.route('/api/admin/activity', methods=['GET'])
+def get_activity():
+    activity = []
+    if table_exists('students'):
+        try:
+            # Latest 3 Students
+            stus = supabase.table('students').select('name, created_at').order('created_at', desc=True).limit(3).execute()
+            for s in stus.data:
+                activity.append({"s": s['name'], "a": "New Registration", "t": s['created_at'][:10]})
+            
+            # Latest 3 Grades
+            grades = supabase.table('results').select('*, students(name)').order('created_at', desc=True).limit(3).execute()
+            for g in grades.data:
+                name = g.get('students', {}).get('name', 'Student')
+                activity.append({"s": name, "a": f"Grade Entered: {g['grade']}", "t": g['created_at'][:10]})
+        except Exception as e:
+            print(f"Activity error: {e}")
+
+    if not activity:
+        activity = [{"s": "System", "a": "No recent activity found", "t": "—"}]
+    
+    return jsonify({"activity": sorted(activity, key=lambda x: x['t'], reverse=True)[:5]}), 200
 
 
 if __name__ == '__main__':
