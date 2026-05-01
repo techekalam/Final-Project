@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
         if (isStaff) {
             const container = document.getElementById('search-container-finance');
+            container.style.display = 'block';
             if (studentName) document.getElementById('student-search-finance').value = studentName;
             const header = document.getElementById('finance-action-header');
             if (header) header.style.display = 'table-cell';
