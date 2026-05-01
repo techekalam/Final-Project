@@ -503,12 +503,8 @@ def manage_results():
             except Exception as e:
                 print(f"Supabase results GET error: {e}")
 
-        # Mock fallback
-        res_list = MOCK_RESULTS.get(user_id, [
-            {"course": {"code": "CS101",  "name": "Intro to Programming"},        "grade": "A",  "score": 85, "semester": "Semester 1"},
-            {"course": {"code": "CS102",  "name": "Data Structures & Algorithms"},"grade": "A+", "score": 92, "semester": "Semester 1"},
-            {"course": {"code": "MTH101", "name": "Calculus I"},                  "grade": "B+", "score": 78, "semester": "Semester 1"}
-        ])
+        # Mock fallback - only show what has been manually entered
+        res_list = MOCK_RESULTS.get(user_id, [])
         return jsonify({"results": res_list}), 200
 
     if request.method == 'POST':
