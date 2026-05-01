@@ -58,8 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 { id: 'nav-profile', icon: '👤', text: 'My Profile', action: loadUserProfile },
                 { id: 'nav-grades', icon: '📝', text: 'Input Grades', action: loadGradeInput },
                 { id: 'nav-courses', icon: '📘', text: 'Courses', action: loadAdminCourses },
-                { id: 'nav-addcourse', icon: '➕', text: 'Add Course', action: loadAddCourse },
-                { id: 'nav-students', icon: '👥', text: 'Students', action: loadAllStudents },
+                {id:'nav-addcourse',icon:'➕',text:'Add Course',action:loadAddCourse},
+                {id:'nav-students',icon:'👥',text:'Students',action:loadAllStudents},
+                {id:'nav-transcript',icon:'📜',text:'Results',action:loadTranscripts},
             ];
         } else if (currentUser.role === 'finance') {
             links = [
@@ -215,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setPageHeader('Academic Transcript', studentName ? `Viewing results for: ${studentName}` : 'Official academic record.');
         injectTemplate('tpl-transcripts');
 
-        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance';
+        const isStaff = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'finance' || currentUser.role === 'lecturer';
         if (isStaff) {
             const container = document.getElementById('search-container-results');
             container.style.display = 'block';
