@@ -141,13 +141,13 @@
     <!-- STUDENT PROFILE -->
     <template id="tpl-student-profile">
         <div class="grid-layout">
-            <div class="glass-card span-3" style="text-align: center;">
-                <div class="profile-pic-container">
-                    <img id="prof-pic-display" src="https://ui-avatars.com/api/?name=User&background=002855&color=fff" alt="Profile Picture">
-                    <label for="prof-pic-input" class="upload-btn">📷 Change Photo</label>
+            <div class="glass-card span-3" style="text-align: center; padding: 30px;">
+                <div class="profile-pic-container" style="margin-bottom: 20px;">
+                    <img id="prof-pic-display" src="https://ui-avatars.com/api/?name=User&background=002855&color=fff&size=128" alt="Profile Picture">
+                    <label for="prof-pic-input" class="upload-btn">📷</label>
                     <input type="file" id="prof-pic-input" style="display: none;" accept="image/*">
                 </div>
-                <h3>👤 My Profile</h3>
+                <h3 style="margin-bottom: 25px;">👤 Student Profile</h3>
                 <form id="profile-form" class="profile-form">
                     <div class="form-row">
                         <div class="form-group">
@@ -452,8 +452,13 @@
     <!-- UNIVERSAL: USER PROFILE (for non-student stakeholders) -->
     <template id="tpl-user-profile">
         <div class="grid-layout">
-            <div class="glass-card span-2">
-                <h3>👤 My Profile</h3>
+            <div class="glass-card span-3" style="text-align: center; padding: 30px;">
+                <div class="profile-pic-container" style="margin-bottom: 20px;">
+                    <img id="up-pic-display" src="https://ui-avatars.com/api/?name=Staff&background=002855&color=fff&size=128" alt="Profile Picture">
+                    <label for="up-pic-input" class="upload-btn">📷</label>
+                    <input type="file" id="up-pic-input" style="display: none;" accept="image/*">
+                </div>
+                <h3 style="margin-bottom: 25px;">👤 My Profile</h3>
                 <form id="user-profile-form" class="profile-form">
                     <div class="form-row">
                         <div class="form-group">
