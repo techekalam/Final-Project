@@ -362,11 +362,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.editFee = async function(id, btn) {
         const newPaid = prompt('Enter total amount paid (UGX):');
-        if (newPaid === null) return;
+        if (newPaid === null || newPaid === '') return;
         try {
-            const res = await fetch('/api/fees', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, amount_paid: newPaid }) });
-            if (res.ok) { loadTuition(); } else { alert('Failed to update fee record'); }
-        } catch (err) { console.error(err); }
+            const res = await fetch('/api/fees', { 
+                method: 'PUT', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ id, amount_paid: newPaid }) 
+            });
+            const data = await res.json();
+            if (res.ok) { 
+                // Find current search value to refresh correctly
+                const searchVal = document.getElementById('student-search-finance').value;
+                if (searchVal) performStudentSearch(searchVal, 'finance');
+                else loadTuition(); 
+            } else { 
+                alert('Update Failed: ' + (data.error || 'Unknown error')); 
+            }
+        } catch (err) { 
+            console.error(err); 
+            alert('Connection Error: Could not reach the server.');
+        }
     };
 
     // ADMIN DASHBOARD
