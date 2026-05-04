@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'registry', 'finance', 'lecturer', 'student')),
+    profile_pic TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS students (
     faculty VARCHAR(100),
     program VARCHAR(100),
     year_of_study INTEGER DEFAULT 1,
+    profile_pic TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

@@ -156,13 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) { console.error(err); }
 
         // Handle Image Upload Preview
+        let currentProfilePic = null;
         document.getElementById('prof-pic-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     document.getElementById('prof-pic-display').src = e.target.result;
-                    // In a real app, you'd upload this to a server/Supabase Storage
+                    currentProfilePic = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -170,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const msgEl = document.getElementById('profile-msg'); msgEl.textContent = '';
             const profile = { name: document.getElementById('prof-name').value, phone: document.getElementById('prof-phone').value, faculty: document.getElementById('prof-faculty').value, program: document.getElementById('prof-program').value };
+            if (currentProfilePic) profile.profile_pic = currentProfilePic;
             try {
                 const res = await fetch('/api/student/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: currentUser.id, profile }) });
                 if (res.ok) { msgEl.textContent = '✓ Profile updated!'; msgEl.style.color = '#28a745'; currentUser.name = profile.name; document.getElementById('sidebar-user-name').textContent = profile.name; }
@@ -194,12 +196,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) { console.error(err); }
 
         // Handle Image Upload Preview
+        let currentUserPic = null;
         document.getElementById('up-pic-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     document.getElementById('up-pic-display').src = e.target.result;
+                    currentUserPic = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -207,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('user-profile-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const msgEl = document.getElementById('up-msg'); msgEl.textContent = '';
             const profile = { name: document.getElementById('up-name').value, phone: document.getElementById('up-phone').value, department: document.getElementById('up-department').value };
+            if (currentUserPic) profile.profile_pic = currentUserPic;
             try {
                 const res = await fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: currentUser.id, profile }) });
                 if (res.ok) { msgEl.textContent = '✓ Profile updated!'; msgEl.style.color = '#28a745'; currentUser.name = profile.name; document.getElementById('sidebar-user-name').textContent = profile.name; }
@@ -424,9 +429,48 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const d = await (await fetch('/api/students')).json();
             const tbody = document.getElementById('all-students-tbody');
-            d.students.forEach(s => { const tr = document.createElement('tr'); tr.innerHTML = '<td><strong>' + (s.student_id || '—') + '</strong></td><td>' + (s.name || '—') + '</td><td>' + (s.email || '—') + '</td><td>' + (s.faculty || '—') + '</td><td>' + (s.program || '—') + '</td><td>' + (s.phone || '—') + '</td>'; tbody.appendChild(tr); });
+            const canView = currentUser.role === 'admin' || currentUser.role === 'registry' || currentUser.role === 'lecturer' || currentUser.role === 'finance';
+            
+            d.students.forEach(s => { 
+                const tr = document.createElement('tr'); 
+                let actionTd = '<td>—</td>';
+                if (canView) {
+                    actionTd = `<td><button class="btn-small" onclick="window.viewStudentProfile('${s.user_id}')">View Profile</button></td>`;
+                }
+                tr.innerHTML = '<td><strong>' + (s.student_id || '—') + '</strong></td><td>' + (s.name || '—') + '</td><td>' + (s.email || '—') + '</td><td>' + (s.faculty || '—') + '</td><td>' + (s.program || '—') + '</td><td>' + (s.phone || '—') + '</td>' + actionTd; 
+                tbody.appendChild(tr); 
+            });
         } catch (err) { console.error(err); }
     }
+
+    window.viewStudentProfile = async function(userId) {
+        try {
+            const res = await fetch(`/api/student/profile?user_id=${userId}`);
+            const data = await res.json();
+            const p = data.profile;
+            if (p) {
+                document.getElementById('modal-name').textContent = p.name || 'Unknown';
+                document.getElementById('modal-id').textContent = p.student_id || '—';
+                document.getElementById('modal-email').textContent = p.email || '—';
+                document.getElementById('modal-phone').textContent = p.phone || '—';
+                document.getElementById('modal-faculty').textContent = p.faculty || '—';
+                document.getElementById('modal-program').textContent = p.program || '—';
+                document.getElementById('modal-year').textContent = p.year_of_study || '1';
+                
+                if (p.profile_pic) {
+                    document.getElementById('modal-pic-display').src = p.profile_pic;
+                } else {
+                    document.getElementById('modal-pic-display').src = `https://ui-avatars.com/api/?name=${p.name || 'Student'}&background=002855&color=fff&size=128`;
+                }
+                
+                const modal = document.getElementById('student-modal');
+                modal.style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('Failed to load profile', err);
+            alert('Failed to load student profile.');
+        }
+    };
 
     // ADMIN COURSES
     async function loadAdminCourses() {

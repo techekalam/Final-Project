@@ -214,7 +214,7 @@ def user_profile():
 
         if table_exists('users'):
             try:
-                res = supabase.table('users').select('id, name, email, role').eq('id', user_id).execute()
+                res = supabase.table('users').select('id, name, email, role, profile_pic').eq('id', user_id).execute()
                 if res.data:
                     return jsonify({"profile": res.data[0]}), 200
             except Exception as e:
@@ -238,6 +238,8 @@ def user_profile():
                 update_data = {}
                 if 'name' in profile_data:
                     update_data['name'] = profile_data['name']
+                if 'profile_pic' in profile_data:
+                    update_data['profile_pic'] = profile_data['profile_pic']
                 if update_data:
                     supabase.table('users').update(update_data).eq('id', user_id).execute()
                 return jsonify({"message": "Profile updated successfully"}), 200
