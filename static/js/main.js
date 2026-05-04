@@ -161,9 +161,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('prof-pic-display').src = e.target.result;
-                    currentProfilePic = e.target.result;
+                reader.onload = (readerEvent) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Create a canvas to resize the image
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        const MAX_HEIGHT = 400;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Convert to high-quality but small Base64
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        document.getElementById('prof-pic-display').src = dataUrl;
+                        currentProfilePic = dataUrl;
+                    };
+                    img.src = readerEvent.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -201,9 +230,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('up-pic-display').src = e.target.result;
-                    currentUserPic = e.target.result;
+                reader.onload = (readerEvent) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Create a canvas to resize the image
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        const MAX_HEIGHT = 400;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Convert to high-quality but small Base64
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        document.getElementById('up-pic-display').src = dataUrl;
+                        currentUserPic = dataUrl;
+                    };
+                    img.src = readerEvent.target.result;
                 };
                 reader.readAsDataURL(file);
             }
