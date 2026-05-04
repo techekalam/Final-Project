@@ -327,10 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         originalBtn.textContent = 'Addition successful ✓';
                         originalBtn.style.background = '#28a745';
                         document.getElementById('add-fee-form').reset();
+                        loadTuition(targetUserId, studentName);
                         setTimeout(() => { 
                             originalBtn.textContent = originalText; 
                             originalBtn.style.background = '';
-                            loadTuition(targetUserId, studentName); 
                         }, 3000);
                     }
                     else { const err = await res.json(); msgEl.textContent = '✗ ' + (err.error || 'Failed'); }
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) { 
                 // Find current search value to refresh correctly
                 const searchVal = document.getElementById('student-search-finance').value;
-                if (searchVal) performStudentSearch(searchVal, 'finance');
+                if (searchVal) performStudentSearch('finance');
                 else loadTuition(); 
             } else { 
                 alert('Update Failed: ' + (data.error || 'Unknown error')); 
