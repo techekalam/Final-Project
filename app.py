@@ -91,6 +91,9 @@ def login():
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
 
+    if email != 'admin@cavendish.ac.ug' and not email.endswith('@student.cavendish.ac.ug'):
+        return jsonify({"error": "Access denied. Only @student.cavendish.ac.ug or the admin can login."}), 403
+
     # Try Supabase first
     if table_exists('users'):
         try:
@@ -171,6 +174,9 @@ def register_student():
 
     if not name or not email:
         return jsonify({"error": "Name and email are required"}), 400
+
+    if not email.endswith('@student.cavendish.ac.ug'):
+        return jsonify({"error": "Students must be registered with a @student.cavendish.ac.ug email."}), 400
 
     if table_exists('users') and table_exists('students'):
         try:
