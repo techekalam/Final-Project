@@ -401,13 +401,10 @@ def get_student_dashboard():
                             lessons.append({"date": f"2026-05-0{i+1}", "course": e['courses']['name'], "time": f"{9+i}:00 AM"})
 
                 return jsonify({
-                    "performance": scores if scores else [85, 90, 78, 92, 88],
-                    "upcoming_lessons": lessons if lessons else [
-                        {"date": "2026-05-01", "course": "Intro to Programming", "time": "10:00 AM"},
-                        {"date": "2026-05-02", "course": "Data Structures", "time": "02:00 PM"}
-                    ],
-                    "fee_balance": float(balance) if balance else 5500000.00,
-                    "enrolled_count": len(lessons) if lessons else 3
+                    "performance": scores,
+                    "upcoming_lessons": lessons,
+                    "fee_balance": float(balance),
+                    "enrolled_count": len(lessons)
                 }), 200
         except Exception as e:
             print(f"Supabase student dash error: {e}")
