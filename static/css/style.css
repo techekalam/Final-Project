@@ -178,6 +178,36 @@ body {
     box-shadow: 0 0 0 3px rgba(0, 168, 157, 0.12);
 }
 
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color var(--transition);
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: var(--primary);
+}
+
+.password-toggle.active {
+    color: var(--accent-teal);
+}
+
 .readonly-input {
     background: rgba(0, 0, 0, 0.04) !important;
     color: var(--text-secondary) !important;

@@ -32,7 +32,12 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
+                    <div class="password-wrapper">
+                        <input type="password" id="password" required placeholder="Enter your password">
+                        <button type="button" id="toggle-password" class="password-toggle">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" id="login-btn" class="btn-primary">
                     <span class="btn-text">Sign In</span>
