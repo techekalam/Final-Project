@@ -91,15 +91,17 @@ def login():
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
 
-    if email != 'admin@cavendish.ac.ug' and not email.endswith('@student.cavendish.ac.ug'):
-        return jsonify({"error": "Access denied. Only @student.cavendish.ac.ug or the admin can login."}), 403
-
     # Try Supabase first
     if table_exists('users'):
         try:
             response = supabase.table('users').select('*').eq('email', email).eq('password', password).execute()
             if response.data and len(response.data) > 0:
                 user = response.data[0]
+                
+                # Enforce domain restriction (Only Admins and @student.cavendish.ac.ug are allowed)
+                if user.get('role') != 'admin' and not email.endswith('@student.cavendish.ac.ug'):
+                    return jsonify({"error": "Access denied. Only @student.cavendish.ac.ug or the admin can login."}), 403
+
                 user.pop('password', None)
                 return jsonify({"user": user}), 200
             else:
