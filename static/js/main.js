@@ -580,17 +580,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // REPORTS
-    function loadReports() {
+    async function loadReports() {
         setPageHeader('Reports', 'Generate system reports.');
-        dynamicContent.innerHTML = '';
-        const w = document.createElement('div'); w.className = 'grid-layout';
-        w.innerHTML = '<div class="glass-card span-2"><h3>📈 Enrollment Summary</h3><canvas id="enrollmentChart" height="120"></canvas></div><div class="glass-card span-1"><h3>📊 Quick Stats</h3><div class="info-block"><p><strong>Total Students:</strong> 45</p><p><strong>Active Courses:</strong> 6</p><p><strong>Revenue (Sem 1):</strong> ' + formatUGX(125000000) + '</p><p><strong>Fee Collection Rate:</strong> 76%</p><p><strong>Avg. GPA:</strong> 3.6</p></div></div><div class="glass-card span-3"><h3>💰 Financial Health</h3><canvas id="financeChart" height="80"></canvas></div>';
-        dynamicContent.appendChild(w);
-        setTimeout(() => {
+        dynamicContent.innerHTML = '<div class="loading-spinner">Loading Reports...</div>';
+        
+        try {
+            const res = await fetch('/api/reports');
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || 'Failed to load reports');
+
+            const stats = data.stats;
+            const enrollmentData = data.enrollment;
+            const financeData = data.finance;
+
+            const w = document.createElement('div'); 
+            w.className = 'grid-layout';
+            w.innerHTML = `
+                <div class="glass-card span-2">
+                    <h3>📈 Enrollment Summary</h3>
+                    <canvas id="enrollmentChart" height="120"></canvas>
+                </div>
+                <div class="glass-card span-1">
+                    <h3>📊 Quick Stats</h3>
+                    <div class="info-block">
+                        <p><strong>Total Students:</strong> ${stats.total_students}</p>
+                        <p><strong>Active Courses:</strong> ${stats.active_courses}</p>
+                        <p><strong>Revenue (Total):</strong> ${formatUGX(stats.revenue)}</p>
+                        <p><strong>Fee Collection Rate:</strong> ${stats.collection_rate}%</p>
+                        <p><strong>Avg. GPA:</strong> ${stats.avg_gpa}</p>
+                    </div>
+                </div>
+                <div class="glass-card span-3">
+                    <h3>💰 Financial Health</h3>
+                    <canvas id="financeChart" height="80"></canvas>
+                </div>
+            `;
+            dynamicContent.innerHTML = '';
+            dynamicContent.appendChild(w);
+
             const isMobile = window.innerWidth <= 500;
-            new Chart(document.getElementById('enrollmentChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Science and Technology', 'Business Admin', 'Law', 'Engineering', 'Medicine'], datasets: [{ data: [18, 12, 8, 4, 3], backgroundColor: ['rgba(0,168,157,0.8)', 'rgba(0,40,85,0.8)', 'rgba(40,167,69,0.8)', 'rgba(240,173,78,0.8)', 'rgba(108,117,125,0.8)'], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, plugins: { legend: { position: isMobile ? 'bottom' : 'right' } } } });
-            new Chart(document.getElementById('financeChart').getContext('2d'), { type: 'bar', data: { labels: ['Sem 1 2025', 'Sem 2 2025', 'Sem 1 2026', 'Sem 2 2026'], datasets: [{ label: 'Fees Due', data: [95e6, 98e6, 105e6, 125e6], backgroundColor: 'rgba(0,40,85,0.6)', borderRadius: 4 }, { label: 'Fees Collected', data: [82e6, 90e6, 95e6, 95e6], backgroundColor: 'rgba(0,168,157,0.6)', borderRadius: 4 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { callback: v => 'UGX ' + (v / 1e6) + 'M' }, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { grid: { display: false } } } } });
-        }, 100);
+            
+            // Enrollment Chart Data
+            const labels = Object.keys(enrollmentData);
+            const counts = Object.values(enrollmentData);
+            
+            new Chart(document.getElementById('enrollmentChart').getContext('2d'), { 
+                type: 'doughnut', 
+                data: { 
+                    labels: labels.length ? labels : ['No Data'], 
+                    datasets: [{ 
+                        data: counts.length ? counts : [1], 
+                        backgroundColor: ['rgba(0,168,157,0.8)', 'rgba(0,40,85,0.8)', 'rgba(40,167,69,0.8)', 'rgba(240,173,78,0.8)', 'rgba(108,117,125,0.8)'], 
+                        borderWidth: 2, 
+                        borderColor: '#fff' 
+                    }] 
+                }, 
+                options: { responsive: true, plugins: { legend: { position: isMobile ? 'bottom' : 'right' } } } 
+            });
+
+            // Finance Chart Data
+            const semLabels = Object.keys(financeData);
+            const dueData = semLabels.map(s => financeData[s].due);
+            const paidData = semLabels.map(s => financeData[s].paid);
+
+            new Chart(document.getElementById('financeChart').getContext('2d'), { 
+                type: 'bar', 
+                data: { 
+                    labels: semLabels.length ? semLabels : ['N/A'], 
+                    datasets: [
+                        { label: 'Fees Due', data: dueData.length ? dueData : [0], backgroundColor: 'rgba(0,40,85,0.6)', borderRadius: 4 }, 
+                        { label: 'Fees Collected', data: paidData.length ? paidData : [0], backgroundColor: 'rgba(0,168,157,0.6)', borderRadius: 4 }
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { callback: v => 'UGX ' + (v / 1e6) + 'M' }, 
+                            grid: { color: 'rgba(0,0,0,0.04)' } 
+                        }, 
+                        x: { grid: { display: false } } 
+                    } 
+                } 
+            });
+        } catch (err) { 
+            console.error(err); 
+            dynamicContent.innerHTML = `<div class="error-msg">Error loading reports: ${err.message}</div>`;
+        }
     }
 
     // STUDENT SEARCH LOGIC

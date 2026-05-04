@@ -485,6 +485,60 @@ def get_admin_dashboard():
         ]
     }), 200
 
+@app.route('/api/reports', methods=['GET'])
+def get_reports():
+    if table_exists('students') and table_exists('fees') and table_exists('courses') and table_exists('results'):
+        try:
+            # 1. Quick Stats
+            stu_res = supabase.table('students').select('id', count='exact').execute()
+            total_students = stu_res.count or 0
+
+            crs_res = supabase.table('courses').select('id', count='exact').execute()
+            active_courses = crs_res.count or 0
+
+            fees_res = supabase.table('fees').select('amount_due, amount_paid').execute()
+            total_due = sum(f['amount_due'] for f in fees_res.data) if fees_res.data else 0
+            total_paid = sum(f['amount_paid'] for f in fees_res.data) if fees_res.data else 0
+            collection_rate = round((total_paid / total_due * 100)) if total_due > 0 else 0
+
+            res_res = supabase.table('results').select('score').execute()
+            scores = [r['score'] for r in res_res.data if r['score'] is not None]
+            avg_score = sum(scores) / len(scores) if scores else 0
+            avg_gpa = round((avg_score / 20.0), 1) if avg_score > 0 else 0.0 # simple conversion for demo
+
+            # 2. Enrollment by Faculty
+            fac_res = supabase.table('students').select('faculty').execute()
+            fac_counts = {}
+            for s in fac_res.data:
+                f = s.get('faculty') or 'Unassigned'
+                fac_counts[f] = fac_counts.get(f, 0) + 1
+            
+            # 3. Financial Health by Semester
+            sem_fees = supabase.table('fees').select('semester, amount_due, amount_paid').execute()
+            finance_stats = {}
+            for f in sem_fees.data:
+                sem = f.get('semester') or 'Unknown'
+                if sem not in finance_stats:
+                    finance_stats[sem] = {'due': 0, 'paid': 0}
+                finance_stats[sem]['due'] += f['amount_due']
+                finance_stats[sem]['paid'] += f['amount_paid']
+
+            return jsonify({
+                "stats": {
+                    "total_students": total_students,
+                    "active_courses": active_courses,
+                    "revenue": float(total_paid),
+                    "collection_rate": collection_rate,
+                    "avg_gpa": avg_gpa
+                },
+                "enrollment": fac_counts,
+                "finance": finance_stats
+            }), 200
+        except Exception as e:
+            print(f"Supabase reports error: {e}")
+
+    return jsonify({"error": "Failed to load real reports data"}), 500
+
 MOCK_FEES_DATA = [
     {"id": 1, "amount_due": 12500000.00, "amount_paid": 7000000.00, "due_date": "2026-05-30", "semester": "Semester 1", "status": "partial"},
     {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
