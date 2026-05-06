@@ -256,6 +256,16 @@
                         <tbody id="transcript-tbody"></tbody>
                     </table>
                 </div>
+                <div class="transcript-footer glass-panel" id="transcript-summary" style="margin-top: 20px; padding: 20px; display: flex; justify-content: space-around; align-items: center;">
+                    <div class="gpa-box">
+                        <span class="stat-label">Semester GPA:</span>
+                        <span class="stat-value" id="sem-gpa" style="color: #00a89d; font-size: 1.5rem; margin-left: 10px;">0.00</span>
+                    </div>
+                    <div class="gpa-box">
+                        <span class="stat-label">Overall CGPA:</span>
+                        <span class="stat-value" id="cgpa" style="color: #002855; font-size: 1.5rem; margin-left: 10px;">0.00</span>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -482,6 +492,36 @@
                             </tr>
                         </thead>
                         <tbody id="admin-courses-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ENROLLED STUDENTS VIEW -->
+    <template id="tpl-enrolled-students">
+        <div class="grid-layout">
+            <div class="glass-card span-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h3 id="enrolled-course-name">Enrolled Students</h3>
+                        <p id="enrolled-course-code" class="card-desc">Course Code</p>
+                    </div>
+                    <button class="btn-small" onclick="loadAdminCourses()">← Back to Catalog</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Faculty</th>
+                                <th>Program</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enrolled-students-tbody"></tbody>
                     </table>
                 </div>
             </div>

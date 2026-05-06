@@ -795,14 +795,68 @@ body {
 .menu-toggle.active span:nth-child(2) { opacity: 0; }
 .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-    background: rgba(0, 40, 85, 0.15);
-    border-radius: 3px;
+/* Transcript Footer & GPA Boxes */
+.transcript-footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--glass-bg-solid);
+    border-top: 2px solid var(--accent-teal);
+    margin-top: 20px;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(0, 40, 85, 0.3); }
+
+.gpa-box {
+    text-align: center;
+    padding: 10px 20px;
+}
+
+.gpa-box .stat-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.gpa-box .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+/* Search Results Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 0 0 12px 12px;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.search-item:hover {
+    background: rgba(0, 40, 85, 0.05);
+}
+
+/* Modal Styling Improvements */
+.modal-content {
+    animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 600px) {
+    .transcript-footer {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
 
 /* Search Components */
 .search-box {

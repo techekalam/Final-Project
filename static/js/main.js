@@ -33,6 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function injectTemplate(id) { const t = document.getElementById(id); dynamicContent.innerHTML = ''; dynamicContent.appendChild(t.content.cloneNode(true)); }
     function setPageHeader(t, s) { pageTitle.textContent = t; pageSub.textContent = s || ''; }
 
+    function gradeToPoints(grade) {
+        const gp_map = { 'A+': 5.0, 'A': 5.0, 'B+': 4.5, 'B': 4.0, 'C+': 3.5, 'C': 3.0, 'D+': 2.5, 'D': 2.0, 'F': 0.0 };
+        return gp_map[grade] || 0.0;
+    }
+
     // AUTH
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault(); loginError.textContent = '';
@@ -353,6 +358,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 tr.innerHTML = '<td><strong>' + cc + '</strong></td><td>' + cn + '</td><td>' + r.score + '</td><td><strong>' + r.grade + '</strong></td><td>' + r.semester + '</td>' + actionTd;
                 tbody.appendChild(tr);
             });
+
+            // Calculate GPA
+            let totalPoints = 0, totalCredits = 0;
+            d.results.forEach(r => {
+                const credits = r.course ? r.course.credits : r.courses ? r.courses.credits : 3;
+                const points = gradeToPoints(r.grade);
+                totalPoints += (points * credits);
+                totalCredits += credits;
+            });
+            const cgpaValue = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+            document.getElementById('cgpa').textContent = cgpaValue;
+            
+            // For now, let's show same value for Semester GPA as we don't filter by semester yet
+            document.getElementById('sem-gpa').textContent = cgpaValue;
+
         } catch (err) { console.error(err); }
     }
 
@@ -562,13 +582,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 let actionHtml = '<td>—</td>';
                 if (canDelete) {
-                    actionHtml = `<td><button class="btn-small" style="background:#e53e3e;" onclick="deleteCourse(${c.id}, this)">Delete</button></td>`;
+                    actionHtml = `<td>
+                        <button class="btn-small" onclick="window.loadEnrolledStudents(${c.id}, '${c.name}', '${c.code}')">View Enrolled</button>
+                        <button class="btn-small" style="background:#e53e3e;" onclick="deleteCourse(${c.id}, this)">Delete</button>
+                    </td>`;
+                } else if (currentUser.role === 'lecturer' || currentUser.role === 'registry') {
+                    actionHtml = `<td><button class="btn-small" onclick="window.loadEnrolledStudents(${c.id}, '${c.name}', '${c.code}')">View Enrolled</button></td>`;
                 }
                 tr.innerHTML = '<td><strong>' + c.code + '</strong></td><td>' + c.name + '</td><td>' + c.credits + '</td><td>' + (c.faculty || '—') + '</td>' + actionHtml;
                 tbody.appendChild(tr);
             });
         } catch (err) { console.error(err); }
     }
+
+    window.loadEnrolledStudents = async function(courseId, courseName, courseCode) {
+        setPageHeader('Enrolled Students', `Viewing students for: ${courseName}`);
+        injectTemplate('tpl-enrolled-students');
+        document.getElementById('enrolled-course-name').textContent = courseName;
+        document.getElementById('enrolled-course-code').textContent = courseCode;
+        
+        try {
+            const res = await fetch(`/api/courses/enrolled_students?course_id=${courseId}`);
+            const data = await res.json();
+            const tbody = document.getElementById('enrolled-students-tbody');
+            tbody.innerHTML = '';
+            
+            if (data.students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No students enrolled in this course yet.</td></tr>';
+            } else {
+                data.students.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${s.student_id || '—'}</strong></td>
+                        <td>${s.name || '—'}</td>
+                        <td>${s.email || '—'}</td>
+                        <td>${s.faculty || '—'}</td>
+                        <td>${s.program || '—'}</td>
+                        <td><button class="btn-small" onclick="window.viewStudentProfile('${s.user_id}')">View Profile</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (err) { console.error(err); }
+    };
 
     // Global delete function for simplicity in inline onclick
     window.deleteCourse = async function (id, btn) {

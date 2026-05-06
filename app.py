@@ -24,6 +24,14 @@ else:
     print("WARNING: SUPABASE_URL and SUPABASE_KEY not found. Using Mock mode only.")
 
 
+# --- Helper: Grade to Points ---
+def grade_to_points(grade):
+    gp_map = {
+        'A+': 5.0, 'A': 5.0, 'B+': 4.5, 'B': 4.0, 
+        'C+': 3.5, 'C': 3.0, 'D+': 2.5, 'D': 2.0, 'F': 0.0
+    }
+    return gp_map.get(grade, 0.0)
+
 # --- Helper: check if a table exists by trying a lightweight query ---
 def table_exists(table_name):
     if not supabase:
@@ -331,6 +339,32 @@ def manage_courses():
         return jsonify({"message": "Course deleted successfully"}), 200
 
 
+# ---- Course Enrolled Students (For Staff) ----
+@app.route('/api/courses/enrolled_students', methods=['GET'])
+def get_enrolled_students():
+    course_id = request.args.get('course_id')
+    if not course_id:
+        return jsonify({"error": "Course ID is required"}), 400
+    
+    if table_exists('enrollments') and table_exists('students'):
+        try:
+            res = supabase.table('enrollments').select('students(*)').eq('course_id', course_id).execute()
+            students = [e['students'] for e in res.data if e.get('students')]
+            return jsonify({"students": students}), 200
+        except Exception as e:
+            print(f"Supabase enrolled students error: {e}")
+            return jsonify({"error": str(e)}), 500
+
+    # Mock fallback
+    cid = int(course_id)
+    students = []
+    for uid, enrolled_cids in MOCK_ENROLLMENTS.items():
+        if cid in enrolled_cids:
+            if uid in MOCK_PROFILES:
+                students.append({**MOCK_PROFILES[uid], "user_id": uid})
+    return jsonify({"students": students}), 200
+
+
 # ---- Course Enrollment ----
 @app.route('/api/student/enroll', methods=['POST'])
 def enroll_course():
@@ -408,11 +442,26 @@ def get_student_dashboard():
                         if e.get('courses'):
                             lessons.append({"date": f"2026-05-0{i+1}", "course": e['courses']['name'], "time": f"{9+i}:00 AM"})
 
+                # Calculate GPA
+                gpa = 0.0
+                res_with_credits = supabase.table('results').select('grade, courses(credits)').eq('student_id', sid).execute()
+                if res_with_credits.data:
+                    total_points = 0
+                    total_credits = 0
+                    for r in res_with_credits.data:
+                        if r.get('courses') and r.get('grade'):
+                            credits = r['courses']['credits']
+                            points = grade_to_points(r['grade'])
+                            total_points += (points * credits)
+                            total_credits += credits
+                    gpa = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
+
                 return jsonify({
                     "performance": scores,
                     "upcoming_lessons": lessons,
                     "fee_balance": float(balance),
-                    "enrolled_count": len(lessons)
+                    "enrolled_count": len(lessons),
+                    "gpa": gpa
                 }), 200
         except Exception as e:
             print(f"Supabase student dash error: {e}")
@@ -501,10 +550,14 @@ def get_reports():
             total_paid = sum(f['amount_paid'] for f in fees_res.data) if fees_res.data else 0
             collection_rate = round((total_paid / total_due * 100)) if total_due > 0 else 0
 
-            res_res = supabase.table('results').select('score').execute()
-            scores = [r['score'] for r in res_res.data if r['score'] is not None]
-            avg_score = sum(scores) / len(scores) if scores else 0
-            avg_gpa = round((avg_score / 20.0), 1) if avg_score > 0 else 0.0 # simple conversion for demo
+            res_res = supabase.table('results').select('grade, courses(credits)').execute()
+            total_pts = 0
+            total_creds = 0
+            for r in res_res.data:
+                if r.get('courses') and r.get('grade'):
+                    total_pts += (grade_to_points(r['grade']) * r['courses']['credits'])
+                    total_creds += r['courses']['credits']
+            avg_gpa = round(total_pts / total_creds, 2) if total_creds > 0 else 0.0
 
             # 2. Enrollment by Faculty
             fac_res = supabase.table('students').select('faculty').execute()
