@@ -691,7 +691,7 @@ def manage_results():
                 stu = supabase.table('students').select('id').eq('user_id', user_id).execute()
                 if stu.data:
                     sid = stu.data[0]['id']
-                    res = supabase.table('results').select('*, courses(code, name)').eq('student_id', sid).execute()
+                    res = supabase.table('results').select('*, courses(code, name, credits)').eq('student_id', sid).execute()
                     return jsonify({"results": res.data}), 200
             except Exception as e:
                 print(f"Supabase results GET error: {e}")

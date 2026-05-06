@@ -34,8 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function setPageHeader(t, s) { pageTitle.textContent = t; pageSub.textContent = s || ''; }
 
     function gradeToPoints(grade) {
+        if (!grade) return 0.0;
+        const g = grade.toString().toUpperCase().trim();
         const gp_map = { 'A+': 5.0, 'A': 5.0, 'B+': 4.5, 'B': 4.0, 'C+': 3.5, 'C': 3.0, 'D+': 2.5, 'D': 2.0, 'F': 0.0 };
-        return gp_map[grade] || 0.0;
+        return gp_map[g] || 0.0;
     }
 
     // AUTH
@@ -362,16 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Calculate GPA
             let totalPoints = 0, totalCredits = 0;
             d.results.forEach(r => {
-                const credits = r.course ? r.course.credits : r.courses ? r.courses.credits : 3;
+                const credits = r.courses ? r.courses.credits : (r.course ? r.course.credits : 3);
                 const points = gradeToPoints(r.grade);
-                totalPoints += (points * credits);
-                totalCredits += credits;
+                if (points > 0 || r.grade === 'F') { // Only count if grade is assigned
+                    totalPoints += (points * credits);
+                    totalCredits += credits;
+                }
             });
             const cgpaValue = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
-            document.getElementById('cgpa').textContent = cgpaValue;
             
-            // For now, let's show same value for Semester GPA as we don't filter by semester yet
-            document.getElementById('sem-gpa').textContent = cgpaValue;
+            const semGpaEl = document.getElementById('sem-gpa');
+            const cgpaEl = document.getElementById('cgpa');
+            if (semGpaEl) semGpaEl.textContent = cgpaValue;
+            if (cgpaEl) cgpaEl.textContent = cgpaValue;
 
         } catch (err) { console.error(err); }
     }
