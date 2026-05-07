@@ -670,6 +670,92 @@ def download_ledger():
         return jsonify({"error": str(e)}), 500
 
 
+# ---- Academic Transcript Download ----
+@app.route('/api/student/download_transcript', methods=['GET'])
+def download_transcript():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "User ID is required"}), 400
+    
+    try:
+        if table_exists('students') and table_exists('results'):
+            # Fetch student info
+            stu_res = supabase.table('students').select('id, name, student_id, faculty, program').eq('user_id', user_id).execute()
+            if not stu_res.data:
+                return jsonify({"error": "Student not found"}), 404
+            
+            student = stu_res.data[0]
+            sid = student['id']
+            
+            # Fetch results
+            res_res = supabase.table('results').select('*, courses(code, name, credits)').eq('student_id', sid).order('semester').execute()
+            
+            # Generate CSV
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Header Info
+            writer.writerow(['CAVENDISH UNIVERSITY UGANDA - OFFICIAL TRANSCRIPT'])
+            writer.writerow(['Student Name:', student['name']])
+            writer.writerow(['Student ID:', student['student_id']])
+            writer.writerow(['Faculty:', student['faculty']])
+            writer.writerow(['Program:', student['program']])
+            writer.writerow([])
+            
+            # Table Header
+            writer.writerow(['Course Code', 'Course Name', 'Credits', 'Score', 'Grade', 'Semester'])
+            
+            total_pts = 0
+            total_creds = 0
+            
+            gp_map = {'A+': 5.0, 'A': 5.0, 'B+': 4.5, 'B': 4.0, 'C+': 3.5, 'C': 3.0, 'D+': 2.5, 'D': 2.0, 'F': 0.0}
+            
+            for r in res_res.data:
+                c = r.get('courses', {})
+                code = c.get('code', '—')
+                name = c.get('name', '—')
+                creds = c.get('credits', 3)
+                grade = r['grade']
+                
+                writer.writerow([code, name, creds, r['score'], grade, r['semester']])
+                
+                # GPA Calc
+                pts = gp_map.get(grade, 0.0)
+                total_pts += (pts * creds)
+                total_creds += creds
+            
+            cgpa = round(total_pts / total_creds, 2) if total_creds > 0 else 0.0
+            writer.writerow([])
+            writer.writerow(['OVERALL CGPA:', cgpa])
+            
+            output.seek(0)
+            return Response(
+                output.getvalue(),
+                mimetype="text/csv",
+                headers={"Content-disposition": f"attachment; filename=transcript_{student['student_id']}.csv"}
+            )
+        
+        # Mock fallback
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['CAVENDISH UNIVERSITY UGANDA - OFFICIAL TRANSCRIPT (MOCK)'])
+        writer.writerow(['Student ID:', 'STU001'])
+        writer.writerow(['Course Code', 'Course Name', 'Credits', 'Score', 'Grade', 'Semester'])
+        writer.writerow(['CS101', 'Intro to Programming', 3, 85, 'A', 'Semester 1'])
+        writer.writerow(['OVERALL CGPA:', '4.50'])
+        
+        output.seek(0)
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-disposition": f"attachment; filename=transcript_mock.csv"}
+        )
+        
+    except Exception as e:
+        print(f"Download transcript error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # ---- Fees / Tuition ----
 @app.route('/api/fees', methods=['GET', 'POST', 'PUT'])
 def manage_fees():

@@ -342,6 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (header) header.style.display = 'table-cell';
         }
 
+        const downloadBtn = document.getElementById('btn-download-transcript');
+        if (currentUser.role === 'student' && downloadBtn) {
+            downloadBtn.style.display = 'block';
+        }
+
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
         if (!uid && isStaff) return;
 
@@ -646,11 +651,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.downloadStudentLedger = function() {
-        if (!currentViewStudentId) {
+        const sid = currentViewStudentId || (currentUser.role === 'student' ? currentUser.id : null);
+        if (!sid) {
             alert("No student selected for download.");
             return;
         }
-        window.location.href = `/api/finance/download_ledger?student_id=${currentViewStudentId}`;
+        window.location.href = `/api/finance/download_ledger?student_id=${sid}`;
+    };
+
+    window.downloadTranscript = function() {
+        window.location.href = `/api/student/download_transcript?user_id=${currentUser.id}`;
     };
 
     // Global delete function for simplicity in inline onclick

@@ -234,6 +234,11 @@
     <!-- TRANSCRIPTS -->
     <template id="tpl-transcripts">
         <div class="grid-layout">
+            <div class="glass-card span-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3>📜 Academic Transcript</h3>
+                    <button id="btn-download-transcript" class="btn-small" style="display:none; background: var(--primary);" onclick="window.downloadTranscript()">📥 Download Transcript</button>
+                </div>
             <div id="search-container-results" class="glass-card span-3" style="display:none; margin-bottom: 20px;">
                 <div class="search-box">
                     <input type="text" id="student-search-results"
