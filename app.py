@@ -1,5 +1,5 @@
-import os
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template, send_from_directory, Response
+import os, io, csv
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -597,6 +597,79 @@ MOCK_FEES_DATA = [
     {"id": 2, "amount_due": 12500000.00, "amount_paid": 12500000.00, "due_date": "2025-11-30", "semester": "Semester 2 (2025)", "status": "paid"},
 ]
 
+# ---- Finance Ledger Download ----
+@app.route('/api/finance/download_ledger', methods=['GET'])
+def download_ledger():
+    student_id = request.args.get('student_id')
+    if not student_id:
+        return jsonify({"error": "Student ID is required"}), 400
+    
+    try:
+        if table_exists('students') and table_exists('fees'):
+            # Fetch student info
+            stu_res = supabase.table('students').select('name, student_id, faculty, program').eq('id', student_id).execute()
+            if not stu_res.data:
+                return jsonify({"error": "Student not found"}), 404
+            
+            student = stu_res.data[0]
+            
+            # Fetch fee records
+            fees_res = supabase.table('fees').select('*').eq('student_id', student_id).order('due_date').execute()
+            
+            # Generate CSV
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Header Info
+            writer.writerow(['CAVENDISH UNIVERSITY UGANDA - TUITION LEDGER'])
+            writer.writerow(['Student Name:', student['name']])
+            writer.writerow(['Student ID:', student['student_id']])
+            writer.writerow(['Faculty:', student['faculty']])
+            writer.writerow(['Program:', student['program']])
+            writer.writerow([])
+            
+            # Table Header
+            writer.writerow(['Semester', 'Amount Due (UGX)', 'Amount Paid (UGX)', 'Balance (UGX)', 'Due Date', 'Status'])
+            
+            for f in fees_res.data:
+                balance = f['amount_due'] - f['amount_paid']
+                writer.writerow([
+                    f['semester'],
+                    f['amount_due'],
+                    f['amount_paid'],
+                    balance,
+                    f['due_date'],
+                    f['status']
+                ])
+            
+            output.seek(0)
+            return Response(
+                output.getvalue(),
+                mimetype="text/csv",
+                headers={"Content-disposition": f"attachment; filename=ledger_{student['student_id']}.csv"}
+            )
+        
+        # Mock fallback
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['CAVENDISH UNIVERSITY UGANDA - TUITION LEDGER (MOCK)'])
+        writer.writerow(['Student ID:', student_id])
+        writer.writerow([])
+        writer.writerow(['Semester', 'Amount Due (UGX)', 'Amount Paid (UGX)', 'Balance (UGX)', 'Due Date', 'Status'])
+        writer.writerow(['Semester 1', '3500000', '2000000', '1500000', '2026-05-30', 'partial'])
+        
+        output.seek(0)
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-disposition": f"attachment; filename=ledger_mock_{student_id}.csv"}
+        )
+        
+    except Exception as e:
+        print(f"Download ledger error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # ---- Fees / Tuition ----
 @app.route('/api/fees', methods=['GET', 'POST', 'PUT'])
 def manage_fees():
@@ -608,11 +681,11 @@ def manage_fees():
                 if stu.data:
                     sid = stu.data[0]['id']
                     res = supabase.table('fees').select('*').eq('student_id', sid).execute()
-                    return jsonify({"fees": res.data}), 200
+                    return jsonify({"fees": res.data, "student_id": sid}), 200
             except Exception as e:
                 print(f"Supabase fees error: {e}")
 
-        return jsonify({"fees": MOCK_FEES_DATA}), 200
+        return jsonify({"fees": MOCK_FEES_DATA, "student_id": 5}), 200
 
     if request.method == 'POST':
         data = request.json

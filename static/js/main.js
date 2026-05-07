@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const dynamicContent = document.getElementById('dynamic-content');
     const pageTitle = document.getElementById('page-title');
     const pageSub = document.getElementById('page-subtitle');
+    
+    let currentViewStudentId = null; // Track selected student for ledger downloads
 
     // Password Visibility Toggle
     const passwordInput = document.getElementById('password');
@@ -440,6 +442,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
+        currentViewStudentId = null; // reset
+        const downloadBtn = document.getElementById('btn-download-ledger');
+        if (downloadBtn) downloadBtn.style.display = 'none';
+
         if (!uid && isStaff) {
             document.getElementById('total-due').textContent = formatUGX(0);
             document.getElementById('total-paid').textContent = formatUGX(0);
@@ -448,7 +454,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const d = await (await fetch('/api/fees?user_id=' + (uid || 5))).json();
+            const res = await fetch('/api/fees?user_id=' + (uid || 5));
+            const d = await res.json();
+            
+            // If student data found, allow downloading ledger
+            if (d.student_id && downloadBtn) {
+                currentViewStudentId = d.student_id;
+                downloadBtn.style.display = 'block';
+            }
+
             let totalDue = 0, totalPaid = 0;
             const tbody = document.getElementById('fees-tbody');
             tbody.innerHTML = '';
@@ -629,6 +643,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } catch (err) { console.error(err); }
+    };
+
+    window.downloadStudentLedger = function() {
+        if (!currentViewStudentId) {
+            alert("No student selected for download.");
+            return;
+        }
+        window.location.href = `/api/finance/download_ledger?student_id=${currentViewStudentId}`;
     };
 
     // Global delete function for simplicity in inline onclick
