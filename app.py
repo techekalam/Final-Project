@@ -756,6 +756,85 @@ def download_transcript():
         return jsonify({"error": str(e)}), 500
 
 
+# ---- System Reports Downloads ----
+@app.route('/api/reports/download_enrollment', methods=['GET'])
+def download_enrollment_report():
+    try:
+        if table_exists('students'):
+            students = supabase.table('students').select('*').order('name').execute()
+            
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(['CAVENDISH UNIVERSITY UGANDA - SYSTEM ENROLLMENT REPORT'])
+            writer.writerow(['Generated on:', '2026-05-07'])
+            writer.writerow([])
+            writer.writerow(['Name', 'Student ID', 'Email', 'Phone', 'Faculty', 'Program', 'Registration Date'])
+            
+            for s in students.data:
+                writer.writerow([
+                    s.get('name', '—'),
+                    s.get('student_id', '—'),
+                    s.get('email', '—'),
+                    s.get('phone', '—'),
+                    s.get('faculty', '—'),
+                    s.get('program', '—'),
+                    s.get('created_at', '')[:10]
+                ])
+            
+            output.seek(0)
+            return Response(
+                output.getvalue(),
+                mimetype="text/csv",
+                headers={"Content-disposition": "attachment; filename=enrollment_report.csv"}
+            )
+        
+        return jsonify({"error": "No enrollment data available"}), 404
+    except Exception as e:
+        print(f"Download enrollment report error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/reports/download_finance', methods=['GET'])
+def download_finance_report():
+    try:
+        if table_exists('fees'):
+            fees = supabase.table('fees').select('semester, amount_due, amount_paid').execute()
+            
+            # Aggregate by semester
+            stats = {}
+            for f in fees.data:
+                sem = f.get('semester') or 'Unknown'
+                if sem not in stats:
+                    stats[sem] = {'due': 0, 'paid': 0}
+                stats[sem]['due'] += f['amount_due']
+                stats[sem]['paid'] += f['amount_paid']
+            
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(['CAVENDISH UNIVERSITY UGANDA - FINANCIAL HEALTH REPORT'])
+            writer.writerow(['Generated on:', '2026-05-07'])
+            writer.writerow([])
+            writer.writerow(['Semester', 'Total Due (UGX)', 'Total Collected (UGX)', 'Balance (UGX)', 'Collection Rate (%)'])
+            
+            for sem, data in stats.items():
+                due = data['due']
+                paid = data['paid']
+                bal = due - paid
+                rate = round((paid / due * 100), 2) if due > 0 else 0
+                writer.writerow([sem, due, paid, bal, rate])
+            
+            output.seek(0)
+            return Response(
+                output.getvalue(),
+                mimetype="text/csv",
+                headers={"Content-disposition": "attachment; filename=financial_report.csv"}
+            )
+        
+        return jsonify({"error": "No financial data available"}), 404
+    except Exception as e:
+        print(f"Download finance report error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # ---- Fees / Tuition ----
 @app.route('/api/fees', methods=['GET', 'POST', 'PUT'])
 def manage_fees():

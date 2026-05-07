@@ -767,7 +767,10 @@ document.addEventListener('DOMContentLoaded', () => {
             w.className = 'grid-layout';
             w.innerHTML = `
                 <div class="glass-card span-2">
-                    <h3>📈 Enrollment Summary</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3>📈 Enrollment Summary</h3>
+                        <button class="btn-small" style="background: var(--primary);" onclick="window.downloadEnrollmentReport()">📥 Download CSV</button>
+                    </div>
                     <canvas id="enrollmentChart" height="120"></canvas>
                 </div>
                 <div class="glass-card span-1">
@@ -781,7 +784,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="glass-card span-3">
-                    <h3>💰 Financial Health</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3>💰 Financial Health</h3>
+                        <button class="btn-small" style="background: var(--primary);" onclick="window.downloadFinanceReport()">📥 Download CSV</button>
+                    </div>
                     <canvas id="financeChart" height="80"></canvas>
                 </div>
             `;
@@ -839,6 +845,14 @@ document.addEventListener('DOMContentLoaded', () => {
             dynamicContent.innerHTML = `<div class="error-msg">Error loading reports: ${err.message}</div>`;
         }
     }
+
+    window.downloadEnrollmentReport = function() {
+        window.location.href = '/api/reports/download_enrollment';
+    };
+
+    window.downloadFinanceReport = function() {
+        window.location.href = '/api/reports/download_finance';
+    };
 
     // STUDENT SEARCH LOGIC
     window.performStudentSearch = async function (context) {
