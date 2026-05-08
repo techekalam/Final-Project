@@ -342,12 +342,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (header) header.style.display = 'table-cell';
         }
 
+        const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
         const downloadBtn = document.getElementById('btn-download-transcript');
-        if (currentUser.role === 'student' && downloadBtn) {
-            downloadBtn.style.display = 'block';
+        if (downloadBtn) {
+            if (currentUser.role === 'student' || (isStaff && uid)) {
+                downloadBtn.style.display = 'block';
+                currentViewStudentId = uid; // Store the ID for the download function
+            } else {
+                downloadBtn.style.display = 'none';
+            }
         }
 
-        const uid = targetUserId || (currentUser.role === 'student' ? currentUser.id : null);
         if (!uid && isStaff) return;
 
         try {
@@ -660,7 +665,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.downloadTranscript = function() {
-        window.location.href = `/api/student/download_transcript?user_id=${currentUser.id}`;
+        const uid = currentViewStudentId || (currentUser.role === 'student' ? currentUser.id : null);
+        if (!uid) {
+            alert("No student selected for download.");
+            return;
+        }
+        window.location.href = `/api/student/download_transcript?user_id=${uid}`;
     };
 
     // Global delete function for simplicity in inline onclick
